@@ -1,8 +1,7 @@
-FROM openjdk
+FROM amazoncorretto:11
 
-ENV JAVA_HOME=/opt/jdk-9-minimal
-ENV PATH="$PATH:$JAVA_HOME/bin"
+WORKDIR "/home"
 
+COPY * .
 
-
-ENTRYPOINT java --version
+ENTRYPOINT ./gradlew

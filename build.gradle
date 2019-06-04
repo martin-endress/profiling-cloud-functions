@@ -11,6 +11,42 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    main.java.srcDirs = ['src']
+}
+
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
+
+
+    compile group: 'com.google.guava', name: 'guava', version: '27.0-jre'
+
+    // aws
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-cloudwatch', version: '1.11.214'
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-logs', version: '1.11.214'
+    compile group: 'com.amazonaws', name: 'aws-lambda-java-core', version: '1.2.0'
+
+    // log4j2
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'
+
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    
+    // local request handlers (examplary fibonacci)
+    //compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile files('libs/requestHandler.jar')
+
+}
+
+jar {
+    duplicatesStrategy = 'exclude'
+    manifest {
+        attributes(
+                'Main-Class': 'main.Main'
+        )
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }

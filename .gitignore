@@ -103,3 +103,8 @@ gradle-app.setting
 
 ### Gradle Patch ###
 **/build/
+
+bin
+/.settings
+/.classpath
+/.project
