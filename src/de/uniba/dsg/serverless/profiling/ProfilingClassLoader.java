@@ -10,24 +10,24 @@ import de.uniba.dsg.serverless.profiling.mock.ContextMock;
 
 public class ProfilingClassLoader extends ClassLoader {
 
-	public void invokeHandleRequest(String classBinName) {
-		try {
-			ClassLoader classLoader = this.getClass().getClassLoader();
+    public void invokeHandleRequest(String classBinName) {
+        try {
+            ClassLoader classLoader = this.getClass().getClassLoader();
 
-			Class<RequestHandler> loadedMyClass = (Class<RequestHandler>) classLoader.loadClass(classBinName);
+            Class<RequestHandler> loadedMyClass = (Class<RequestHandler>) classLoader.loadClass(classBinName);
 
-			Constructor<RequestHandler> constructor = loadedMyClass.getConstructor();
-			Object myClassObject = constructor.newInstance();
-			RequestHandler handler = (RequestHandler) myClassObject;
+            Constructor<RequestHandler> constructor = loadedMyClass.getConstructor();
+            Object myClassObject = constructor.newInstance();
+            RequestHandler handler = (RequestHandler) myClassObject;
 
-			Map<String, String> map = new HashMap<>();
-			map.put("n", "5");
-			handler.handleRequest(map, new ContextMock());
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+            Map<String, String> map = new HashMap<>();
+            map.put("n", "6");
+            handler.handleRequest(map, new ContextMock());
+        } catch (ClassNotFoundException e) {
+            System.err.println("Class not found: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
 
-	}
+    }
 }

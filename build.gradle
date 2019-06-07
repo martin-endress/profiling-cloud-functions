@@ -15,7 +15,7 @@ repositories {
 }
 
 sourceSets {
-    main.java.srcDirs = ['src']
+    main.java.srcDirs = ['src','cloudFunctions']
 }
 
 dependencies {
@@ -31,14 +31,13 @@ dependencies {
 
     // log4j2
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'
+    //compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
 
-    // local request handlers (examplary fibonacci)
-    //compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile files('libs/requestHandler.jar')
+    // local request handlers of cloud functions
+    compile files('build/libs/cloudFunctions.jar')
 }
 
 jar {
@@ -50,5 +49,12 @@ jar {
     }
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+task jarCloudFunctions(type: Jar) {
+    from (sourceSets.main.output) {
+        include "de/uniba/dsg/serverless/functions/**"
+        archiveName "cloudFunctions.jar"
     }
 }
