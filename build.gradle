@@ -41,7 +41,7 @@ dependencies {
 }
 
 jar {
-    duplicatesStrategy = 'exclude'
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     manifest {
         attributes(
                 'Main-Class': 'de.uniba.dsg.serverless.profiling.Main'
