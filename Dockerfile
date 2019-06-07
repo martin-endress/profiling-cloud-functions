@@ -1,7 +1,18 @@
+FROM gradle:jdk11 AS builder
+
+ENV GRADLE_SRC_DIR=/home/gradle/src
+COPY . $GRADLE_SRC_DIR
+WORKDIR $GRADLE_SRC_DIR
+
+RUN gradle build
+
+# second stage
 FROM amazoncorretto:11
 
-WORKDIR "/home"
+ENV RUN_DIR=/home/
 
-COPY * .
+COPY --from=builder /home/gradle/src /app/
 
-ENTRYPOINT ./gradlew
+WORKDIR /app/
+
+ENTRYPOINT [ "java", "-jar", "/app/build/libs/profilingCloudFunctions-1.0.jar" ]

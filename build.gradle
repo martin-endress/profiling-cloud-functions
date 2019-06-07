@@ -1,11 +1,14 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group 'de.uniba.dsg.mendress'
-version '1.0-SNAPSHOT'
+version '1.0'
 
 sourceCompatibility = 1.8
+
+mainClassName = "de.uniba.dsg.serverless.profiling.Main"
 
 repositories {
     mavenCentral()
@@ -32,18 +35,17 @@ dependencies {
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
-    
+
     // local request handlers (examplary fibonacci)
     //compile fileTree(dir: 'libs', include: ['*.jar'])
     compile files('libs/requestHandler.jar')
-
 }
 
 jar {
     duplicatesStrategy = 'exclude'
     manifest {
         attributes(
-                'Main-Class': 'main.Main'
+                'Main-Class': 'de.uniba.dsg.serverless.profiling.Main'
         )
     }
     from {
