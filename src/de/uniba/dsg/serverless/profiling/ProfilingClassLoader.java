@@ -1,33 +1,48 @@
 package de.uniba.dsg.serverless.profiling;
 
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import de.uniba.dsg.serverless.profiling.mock.ContextMock;
+import de.uniba.dsg.serverless.profiling.model.ProfilingException;
+
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-
-import de.uniba.dsg.serverless.profiling.mock.ContextMock;
-
 public class ProfilingClassLoader extends ClassLoader {
 
-    public void invokeHandleRequest(String classBinName) {
+    public ProfilingClassLoader() {
+
+    }
+
+    /**
+     * Parse and invoke the given RequestHandler with the parameters.
+     *
+     * @param classBinName
+     * @param param
+     * @throws ProfilingException
+     */
+    public void invokeHandleRequest(String classBinName, String param) throws ProfilingException {
+        RequestHandler handler = getRequestHandler(classBinName);
+        Map<String, String> map = new HashMap<>();
+        map.put("n", param);
+        handler.handleRequest(map, new ContextMock());
+    }
+
+    private RequestHandler getRequestHandler(String classBinName) throws ProfilingException {
         try {
-            ClassLoader classLoader = this.getClass().getClassLoader();
-
-            Class<RequestHandler> loadedMyClass = (Class<RequestHandler>) classLoader.loadClass(classBinName);
-
-            Constructor<RequestHandler> constructor = loadedMyClass.getConstructor();
+            Class<?> loadedMyClass = this.getClass().getClassLoader().loadClass(classBinName);
+            Constructor<?> constructor = loadedMyClass.getConstructor();
             Object myClassObject = constructor.newInstance();
-            RequestHandler handler = (RequestHandler) myClassObject;
-
-            Map<String, String> map = new HashMap<>();
-            map.put("n", "6");
-            handler.handleRequest(map, new ContextMock());
+            if (myClassObject instanceof RequestHandler) {
+                return (RequestHandler) myClassObject;
+            } else {
+                throw new ProfilingException(String.format("The class %s is not a RequestHandler", classBinName));
+            }
+        } catch (InstantiationException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw new ProfilingException("Could not create RequestHandler.", e);
         } catch (ClassNotFoundException e) {
-            System.err.println("Class not found: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
+            throw new ProfilingException(String.format("Class %s was not found.", classBinName), e);
         }
-
     }
 }

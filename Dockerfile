@@ -16,4 +16,4 @@ COPY --from=builder /home/gradle/src /app/
 
 WORKDIR /app/
 
-ENTRYPOINT [ "sh", "-c", "java -jar /app/build/libs/profilingCloudFunctions-1.0.jar ${additional}" ]
+ENTRYPOINT [ "sh", "-c", "java -jar /app/build/libs/profilingCloudFunctions-1.0.jar ${JAVA_PARAMS}" ]
