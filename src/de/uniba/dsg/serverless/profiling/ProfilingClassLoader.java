@@ -1,9 +1,11 @@
 package de.uniba.dsg.serverless.profiling;
 
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import de.uniba.dsg.serverless.functions.LambdaException;
 import de.uniba.dsg.serverless.profiling.mock.ContextMock;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 
+import java.awt.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -26,7 +28,11 @@ public class ProfilingClassLoader extends ClassLoader {
         RequestHandler handler = getRequestHandler(classBinName);
         Map<String, String> map = new HashMap<>();
         map.put("n", param);
-        handler.handleRequest(map, new ContextMock());
+        try {
+            handler.handleRequest(map, new ContextMock());
+        } catch (LambdaException e) {
+            throw new ProfilingException("RuntimeException handleRequest", e);
+        }
     }
 
     private RequestHandler getRequestHandler(String classBinName) throws ProfilingException {

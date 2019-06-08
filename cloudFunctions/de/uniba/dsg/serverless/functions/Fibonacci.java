@@ -12,11 +12,6 @@ public class Fibonacci implements RequestHandler<Map<String, String>, Response> 
 
     private static final String CONTAINER_ID = UUID.randomUUID().toString();
 
-    public void test() {
-        System.out.println("wird aufgerufen");
-        new Response("", "", "");
-    }
-
     @Override
     public Response handleRequest(Map<String, String> parameters, Context context) {
         String nString = parameters.getOrDefault("n", "");
@@ -27,7 +22,6 @@ public class Fibonacci implements RequestHandler<Map<String, String>, Response> 
 
         long n = Long.parseLong(nString);
         long result = fibonacci(n);
-        System.out.println("hier" + result);
 
         return createSuccessResponse(String.valueOf(result), context.getAwsRequestId());
     }
