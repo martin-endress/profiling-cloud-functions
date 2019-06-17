@@ -26,9 +26,10 @@ idea {
 }
 
 dependencies {
+    // junit
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
-
+    // google guava
     compile group: 'com.google.guava', name: 'guava', version: '27.0-jre'
 
     // aws
@@ -70,3 +71,5 @@ task jarCloudFunctions(type: Jar) {
         archiveName "cloudFunctions.jar"
     }
 }
+
+jar.dependsOn jarCloudFunctions

@@ -5,27 +5,29 @@ import de.uniba.dsg.serverless.functions.LambdaException;
 import de.uniba.dsg.serverless.profiling.mock.ContextMock;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 
-import java.awt.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProfilingClassLoader extends ClassLoader {
+public class RequestHandlerExecutor {
 
-    public ProfilingClassLoader() {
+    private final RequestHandler handler;
 
+    /**
+     * @param className
+     */
+    public RequestHandlerExecutor(String className) throws ProfilingException {
+        this.handler = getRequestHandler(className);
     }
 
     /**
      * Parse and invoke the given RequestHandler with the parameters.
      *
-     * @param classBinName
      * @param param
      * @throws ProfilingException
      */
-    public void invokeHandleRequest(String classBinName, String param) throws ProfilingException {
-        RequestHandler handler = getRequestHandler(classBinName);
+    public void invokeHandleRequest(String param) throws ProfilingException {
         Map<String, String> map = new HashMap<>();
         map.put("n", param);
         try {

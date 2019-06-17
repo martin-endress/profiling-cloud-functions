@@ -21,7 +21,13 @@ public class Fibonacci implements RequestHandler<Map<String, String>, Response> 
         }
 
         long n = Long.parseLong(nString);
+        try {
+            // sleep for 20 seconds
+            Thread.sleep(20_000);
+        } catch (InterruptedException e) {
+        }
         long result = fibonacci(n);
+        System.out.println(result);
 
         return createSuccessResponse(String.valueOf(result), context.getAwsRequestId());
     }

@@ -4,8 +4,7 @@ ENV GRADLE_SRC_DIR=/home/gradle/src
 COPY . $GRADLE_SRC_DIR
 WORKDIR $GRADLE_SRC_DIR
 
-RUN gradle jar
-RUN gradle jarCloudFunctions
+RUN gradle build
 
 # second stage
 FROM amazoncorretto:11
