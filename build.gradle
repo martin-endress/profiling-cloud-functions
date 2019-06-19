@@ -44,6 +44,12 @@ dependencies {
     compile group: 'com.github.docker-java', name: 'docker-java', version: '3.1.2'
     compile group: 'javax.activation', name: 'activation', version: '1.1.1'
 
+    // https://mvnrepository.com/artifact/com.sun.jersey/jersey-client
+    compile group: 'com.sun.jersey', name: 'jersey-client', version: '1.19.4'
+
+    // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
+    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+
     // https://mvnrepository.com/artifact/commons-io/commons-io
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
 
