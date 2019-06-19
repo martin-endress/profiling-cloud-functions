@@ -4,16 +4,16 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
+import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.InvocationBuilder.AsyncResultCallback;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class ContainerProfiling {
 
@@ -32,12 +32,35 @@ public class ContainerProfiling {
         this.containerId = containerId;
     }
 
+    public String buildContainer() throws ProfilingException {
+        AsyncResultCallback<BuildResponseItem> resultCallback = new AsyncResultCallback();
+        client.buildImageCmd(new File("."))
+                .withTags(new HashSet<>(Arrays.asList(IMAGE_NAME)))
+                .exec(resultCallback);
+        BuildResponseItem buildResponse;
+        try {
+            buildResponse = resultCallback.awaitResult();
+            System.out.println(buildResponse.toString());
+            System.out.println(buildResponse.getAux().getDigest());
+            System.out.println(buildResponse.getAux().toString());
+        } catch (RuntimeException e) {
+            throw new ProfilingException(e);
+        }
+        if (!buildResponse.isBuildSuccessIndicated()) {
+            String error = Optional
+                    .ofNullable(buildResponse.getStream())
+                    .orElse("");
+            throw new ProfilingException("Build was unsuccessful. " + error);
+        }
+        return buildResponse.toString();
+    }
+
     public String startContainer() {
         return startContainer("");
     }
 
     public String startContainer(String envParams) {
-        CreateContainerResponse container = client.createContainerCmd(IMAGE_NAME).withEnv(envParams).exec();
+        CreateContainerResponse container = client.createContainerCmd(IMAGE_NAME).withEnv(envParams).withAttachStdin(true).exec();
         client.startContainerCmd(container.getId()).exec();
         containerId = container.getId();
         return containerId;
