@@ -1,7 +1,6 @@
 package de.uniba.dsg.serverless.profiling;
 
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import de.uniba.dsg.serverless.functions.LambdaException;
 import de.uniba.dsg.serverless.profiling.mock.ContextMock;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 
@@ -32,7 +31,7 @@ public class RequestHandlerExecutor {
         map.put("n", param);
         try {
             handler.handleRequest(map, new ContextMock());
-        } catch (LambdaException e) {
+        } catch (RuntimeException e) {
             throw new ProfilingException("RuntimeException handleRequest", e);
         }
     }

@@ -1,4 +1,4 @@
-package de.uniba.dsg.serverless.functions;
+package de.uniba.dsg.serverless.functions.fibonacci;
 
 public class Response {
 
