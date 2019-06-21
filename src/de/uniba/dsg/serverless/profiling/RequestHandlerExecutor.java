@@ -27,10 +27,8 @@ public class RequestHandlerExecutor {
      * @throws ProfilingException
      */
     public void invokeHandleRequest(String param) throws ProfilingException {
-        Map<String, String> map = new HashMap<>();
-        map.put("n", param);
         try {
-            handler.handleRequest(map, new ContextMock());
+            handler.handleRequest(param, new ContextMock());
         } catch (RuntimeException e) {
             throw new ProfilingException("RuntimeException handleRequest", e);
         }

@@ -14,11 +14,15 @@ public class RetrieveStats {
     public static void main(String[] args) {
         try {
             ContainerProfiling profiling = new ContainerProfiling();
-            profiling.startContainer("JAVA_PARAMS=5");
+            profiling.startContainer();
             System.out.println("Container started.");
+
             List<Statistics> stats = profiling.logStatistics();
             InspectContainerResponse additional = profiling.inspectContainer();
-            new Profile(stats, additional);
+            Profile p = new Profile(stats, additional);
+            System.out.println("Profile created");
+
+            p.print();
         } catch (ProfilingException e) {
             System.err.println(e.getMessage());
             return;

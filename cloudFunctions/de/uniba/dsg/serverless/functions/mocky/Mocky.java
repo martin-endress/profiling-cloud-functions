@@ -8,24 +8,31 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-import java.util.Map;
 
-public class Mocky implements RequestHandler<Map<String, String>, Response> {
+public class Mocky implements RequestHandler<String, Response> {
 
-    public static void main(String[] args) {
-        new Mocky().handleRequest(null, null);
-    }
+    public static final String MOCKY_URL = "http://www.mocky.io";
+
+    // http://www.mocky.io/v2/5d09fe3e3400001129d831d0
+    private Client client = ClientBuilder.newClient();
+    private WebTarget target = client.target(MOCKY_URL);
+
 
     @Override
-    public Response handleRequest(Map<String, String> input, Context context) {
-        Client client = ClientBuilder.newClient();
+    public Response handleRequest(String input, Context context) {
+        target = target.path("v2/5d0ce1cb3500004d00b89b84");
+        target = target.queryParam("mocky-delay", "1s");
+        Invocation.Builder invocationBuilder
+                = target.request(MediaType.APPLICATION_JSON);
 
-        // http://www.mocky.io/v2/5d09fe3e3400001129d831d0
-        WebTarget target = client.target("http://www.mocky.io/v2/5d0a0b883400005d29d83280");
-        Invocation.Builder invocationBuilder = target.request(MediaType.APPLICATION_JSON);
-        invocationBuilder.accept(MediaType.APPLICATION_JSON);
-        String s = invocationBuilder.get(String.class);
-        System.out.println(s);
-        return null;
+        long startTime = System.currentTimeMillis();
+        long endTime = startTime + 200_000;
+        long currentTime = System.currentTimeMillis();
+        while (currentTime < endTime) {
+            System.out.println("requesting resource... \nremaining time =" + (endTime - currentTime));
+            invocationBuilder.get(String.class);
+            currentTime = System.currentTimeMillis();
+        }
+        return new Response();
     }
 }

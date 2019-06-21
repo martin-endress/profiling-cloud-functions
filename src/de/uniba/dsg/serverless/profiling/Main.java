@@ -10,11 +10,14 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            RequestHandlerExecutor loader = new RequestHandlerExecutor("de.uniba.dsg.serverless.functions.fibonacci.Fibonacci");
-            loader.invokeHandleRequest(args[0]);
+            System.out.println("handling request");
+            RequestHandlerExecutor loader = new RequestHandlerExecutor("de.uniba.dsg.serverless.functions.mocky.Mocky");
+            loader.invokeHandleRequest("");
         } catch (ProfilingException e) {
             //logger.fatal(e.getMessage());
+            System.err.println(e.getMessage());
             if (e.getCause() != null) {
+                System.err.println(e.getCause().getMessage());
                 //logger.fatal(String.format("Caused By: %s", e.getCause().getMessage()));
             }
         }
