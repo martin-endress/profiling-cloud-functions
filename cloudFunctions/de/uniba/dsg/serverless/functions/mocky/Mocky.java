@@ -26,7 +26,7 @@ public class Mocky implements RequestHandler<String, Response> {
                 = target.request(MediaType.APPLICATION_JSON);
 
         long startTime = System.currentTimeMillis();
-        long endTime = startTime + 200_000;
+        long endTime = startTime + 10_000;
         long currentTime = System.currentTimeMillis();
         while (currentTime < endTime) {
             System.out.println("requesting resource... \nremaining time =" + (endTime - currentTime));

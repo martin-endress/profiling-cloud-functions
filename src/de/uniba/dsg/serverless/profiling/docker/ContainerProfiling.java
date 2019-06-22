@@ -80,8 +80,7 @@ public class ContainerProfiling {
 
     public InspectContainerResponse inspectContainer() throws ProfilingException {
         try {
-            InspectContainerResponse response = client.inspectContainerCmd(containerId).exec();
-            return response;
+            return client.inspectContainerCmd(containerId).exec();
         } catch (NotFoundException e) {
             throw new ProfilingException(e);
         }
