@@ -4,21 +4,18 @@ import com.github.dockerjava.api.model.Statistics;
 import de.uniba.dsg.serverless.profiling.util.MetricsUtil;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class MemoryMetrics {
+public class MemoryMetrics extends Metrics {
 
     public static final List<String> RELEVANT_METRICS = Arrays.asList("cache", "swap", "active_anon", "inactive_file");
-
-    private final MetricsUtil util = new MetricsUtil();
-    private final Map<String, Long> metrics;
-
     private final long time;
 
     public MemoryMetrics(List<String> lines, long time) throws ProfilingException {
         metrics = util.fromLines(lines);
-        metrics.keySet().containsAll(RELEVANT_METRICS);
         this.time = time;
+        if (!metrics.keySet().containsAll(RELEVANT_METRICS)) {
+            throw new ProfilingException("map must contain contain all metrics defined in RELEVANT_METRICS");
+        }
     }
 
     public MemoryMetrics(Statistics stats, String started) throws ProfilingException {
@@ -40,12 +37,4 @@ public class MemoryMetrics {
         this.time = util.timeDifference(started, currentTime);
     }
 
-    @Override
-    public String toString() {
-        List<String> out = new ArrayList<>();
-        for (String s : metrics.keySet()) {
-            out.add(metrics.get(s).toString());
-        }
-        return out.stream().collect(Collectors.joining(","));
-    }
 }
