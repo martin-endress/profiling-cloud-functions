@@ -2,7 +2,9 @@ BachelorArbeit von Martin Endreß
 
 docker stats are retrieved from information about control groups.
 
-these are available in /sys/fs/cgroup/docker/<long_id>/
+these are available in /sys/fs/cgroup/<type>/docker/<long_id>/
+
+type can be 'memory', 'cpu'
 
 For example, 'cpuacct.usage' stores the current cpu usage. This is also available in stats (every 1s).
 
