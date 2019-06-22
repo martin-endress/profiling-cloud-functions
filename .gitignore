@@ -111,3 +111,6 @@ bin
 
 # logs
 /logs
+
+# profiles
+/profiles
