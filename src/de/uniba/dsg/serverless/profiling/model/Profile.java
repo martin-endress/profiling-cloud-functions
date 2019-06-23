@@ -8,6 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,30 +21,35 @@ public class Profile {
     public static final Path OUTPUT_FOLDER = Paths.get("profiles");
 
     public final int length;
-    public final List<MemoryMetrics> stats;
+    public final List<Metrics> stats;
 
     private final InspectContainerResponse additional;
-    public final String started;
-    public final String finished;
+    public final LocalDateTime started;
+    public final LocalDateTime finished;
 
-    public Profile(List<MemoryMetrics> stats, InspectContainerResponse additional) throws ProfilingException {
+    public Profile(List<Metrics> stats, InspectContainerResponse additional) throws ProfilingException {
+        if (stats.isEmpty()) {
+            throw new ProfilingException("Stats must not be null.");
+        }
         validateProfile(additional);
         this.length = stats.size();
         this.stats = stats;
         this.additional = additional;
 
-        started = additional.getState().getStartedAt();
-        finished = additional.getState().getFinishedAt();
+        try {
+            started = LocalDateTime.parse(additional.getState().getStartedAt(), DateTimeFormatter.ISO_DATE_TIME);
+            finished = LocalDateTime.parse(additional.getState().getFinishedAt(), DateTimeFormatter.ISO_DATE_TIME);
+        } catch (DateTimeParseException e) {
+            throw new ProfilingException(e);
+        }
     }
 
     public void save() throws ProfilingException {
         List<String> lines = new ArrayList<>();
-        String header = MemoryMetrics.RELEVANT_METRICS.stream().collect(Collectors.joining(","));
-        lines.add(header);
-        for (MemoryMetrics m : stats) {
+        lines.add(stats.get(0).getHeader());
+        for (Metrics m : stats) {
             lines.add(m.toString());
         }
-
         Path path = OUTPUT_FOLDER.resolve(getUniqueFileName());
         try {
             Files.write(path, lines);
@@ -51,12 +59,13 @@ public class Profile {
     }
 
     private String getUniqueFileName() {
-        //TODO improve
-        return started;
+        String resource = stats.get(0).getClass().getSimpleName();
+        String started = this.started.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return resource + " " + started;
     }
 
     private void validateProfile(InspectContainerResponse additional) throws ProfilingException {
-        if (additional.getState().getExitCode() != 0 && "exited".equals(additional.getState().getStatus())) {
+        if (additional.getState().getExitCode() != 0 || !"exited".equals(additional.getState().getStatus())) {
             String exitCode = "exit code: " + additional.getState().getExitCode();
             String status = "status: " + additional.getState().getStatus();
             throw new ProfilingException(exitCode + " - " + status);

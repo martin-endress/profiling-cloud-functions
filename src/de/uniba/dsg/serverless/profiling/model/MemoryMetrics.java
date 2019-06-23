@@ -1,21 +1,21 @@
 package de.uniba.dsg.serverless.profiling.model;
 
 import com.github.dockerjava.api.model.Statistics;
-import de.uniba.dsg.serverless.profiling.util.MetricsUtil;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 public class MemoryMetrics extends Metrics {
 
-    public static final List<String> RELEVANT_METRICS = Arrays.asList("cache", "swap", "active_anon", "inactive_file");
     private final long time;
 
     public MemoryMetrics(List<String> lines, long time) throws ProfilingException {
+        RELEVANT_METRICS = Arrays.asList("cache", "swap", "active_anon", "inactive_file");
         metrics = util.fromLines(lines);
+        validate();
         this.time = time;
-        if (!metrics.keySet().containsAll(RELEVANT_METRICS)) {
-            throw new ProfilingException("map must contain contain all metrics defined in RELEVANT_METRICS");
-        }
     }
 
     public MemoryMetrics(Statistics stats, String started) throws ProfilingException {
@@ -29,9 +29,11 @@ public class MemoryMetrics extends Metrics {
         long swap = Optional.ofNullable(stats.getMemoryStats().getStats().getSwap()).orElse(0l);
         metrics.put("swap", swap);
         long activeAnon = Optional.ofNullable(stats.getMemoryStats().getStats().getActiveAnon()).orElse(0l);
-        metrics.put("activeAnon", activeAnon);
+        metrics.put("active_anon", activeAnon);
         long inactiveFile = Optional.ofNullable(stats.getMemoryStats().getStats().getInactiveFile()).orElse(0l);
-        metrics.put("inactiveFile", inactiveFile);
+        metrics.put("inactive_file", inactiveFile);
+
+        validate();
 
         String currentTime = stats.getRead();
         this.time = util.timeDifference(started, currentTime);
