@@ -1,39 +1,35 @@
 package de.uniba.dsg.serverless.profiling.model;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.Statistics;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Profile {
 
     public static final Path OUTPUT_FOLDER = Paths.get("profiles");
 
     public final int length;
-    public final List<Metrics> stats;
+    public final List<Metrics> metrics;
 
     private final InspectContainerResponse additional;
     public final LocalDateTime started;
     public final LocalDateTime finished;
 
-    public Profile(List<Metrics> stats, InspectContainerResponse additional) throws ProfilingException {
-        if (stats.isEmpty()) {
-            throw new ProfilingException("Stats must not be null.");
+    public Profile(List<Metrics> metrics, InspectContainerResponse additional) throws ProfilingException {
+        if (metrics == null || metrics.isEmpty()) {
+            throw new ProfilingException("Metrics must be a non empty List.");
         }
         validateProfile(additional);
-        this.length = stats.size();
-        this.stats = stats;
+        this.length = metrics.size();
+        this.metrics = metrics;
         this.additional = additional;
 
         try {
@@ -46,20 +42,25 @@ public class Profile {
 
     public void save() throws ProfilingException {
         List<String> lines = new ArrayList<>();
-        lines.add(stats.get(0).getHeader());
-        for (Metrics m : stats) {
+        lines.add(getHeader());
+        for (Metrics m : metrics) {
             lines.add(m.toString());
         }
         Path path = OUTPUT_FOLDER.resolve(getUniqueFileName());
         try {
+            Files.createDirectories(OUTPUT_FOLDER);
             Files.write(path, lines);
         } catch (IOException e) {
-            throw new ProfilingException("could not write to " + path, e);
+            throw new ProfilingException("Could not write to " + path, e);
         }
     }
 
+    private String getHeader() {
+        return String.join(",", metrics.get(0).RELEVANT_METRICS);
+    }
+
     private String getUniqueFileName() {
-        String resource = stats.get(0).getClass().getSimpleName();
+        String resource = metrics.get(0).getClass().getSimpleName();
         String started = this.started.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         return resource + " " + started;
     }
@@ -74,6 +75,6 @@ public class Profile {
 
     @Override
     public String toString() {
-        return "Profile of container " + additional.getImageId() + " was created at " + started + ". size: " + stats.size() + ".";
+        return "Profile of container " + additional.getImageId() + " was created at " + started + ". size: " + metrics.size() + ".";
     }
 }

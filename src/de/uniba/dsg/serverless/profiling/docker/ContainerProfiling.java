@@ -33,6 +33,7 @@ public class ContainerProfiling {
     }
 
     public String buildContainer() throws ProfilingException {
+        // FIXME
         AsyncResultCallback<BuildResponseItem> resultCallback = new AsyncResultCallback();
         client.buildImageCmd(new File("."))
                 .withTags(new HashSet<>(Arrays.asList(IMAGE_NAME)))
@@ -66,6 +67,11 @@ public class ContainerProfiling {
         return containerId;
     }
 
+    /**
+     * Blocking function that retrieves all statistics (docker stats) of the container until it terminates.
+     * @return List of statistics
+     * @throws ProfilingException When the Thread is interrupted or
+     */
     public List<Statistics> logStatistics() throws ProfilingException {
         List<Statistics> statistics = new ArrayList<>();
         Optional<Statistics> nextRead = getNextStatistics();
@@ -78,6 +84,12 @@ public class ContainerProfiling {
         return statistics;
     }
 
+    /**
+     * Blocking function that returns the current properties of the container (docker inspect)
+     *
+     * @return the inspect result
+     * @throws ProfilingException when the container is not found
+     */
     public InspectContainerResponse inspectContainer() throws ProfilingException {
         try {
             return client.inspectContainerCmd(containerId).exec();

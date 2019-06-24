@@ -1,5 +1,6 @@
 package de.uniba.dsg.serverless.profiling.util;
 
+import com.github.dockerjava.api.model.Statistics;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 
 import java.time.Duration;
@@ -9,33 +10,9 @@ import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class MetricsUtil {
-
-    /**
-     * Creates a map containing performance metrics
-     *
-     * @param lines performance metrics as key value pairs separated by spaces <br>Example: <br>cache 1337L<br>cpu_usage 420L
-     * @return Map
-     * @throws ProfilingException input does not have the correct format
-     */
-    public Map<String, Long> fromLines(List<String> lines) throws ProfilingException {
-        HashMap<String, Long> map = new HashMap<>();
-        for (String line : lines) {
-            String[] parts = line.split(" ");
-            if (parts.length != 2) {
-                throw new ProfilingException("Each line must be a key value pair separated by \" \". line:" + line);
-            }
-            long val;
-            try {
-                val = Long.parseLong(parts[1]);
-            } catch (NumberFormatException e) {
-                throw new ProfilingException("Parse error in line: " + line, e);
-            }
-            map.put(parts[0], val);
-        }
-        return map;
-    }
 
     /**
      * Parses from and to and returns the difference between the two instances in milliseconds.
