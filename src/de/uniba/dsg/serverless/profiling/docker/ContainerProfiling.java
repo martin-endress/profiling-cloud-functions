@@ -61,7 +61,11 @@ public class ContainerProfiling {
     }
 
     public String startContainer(String envParams) {
-        CreateContainerResponse container = client.createContainerCmd(IMAGE_NAME).withAttachStdin(true).exec();
+        CreateContainerResponse container = client
+                .createContainerCmd(IMAGE_NAME)
+                .withEnv(envParams)
+                .withAttachStdin(true)
+                .exec();
         client.startContainerCmd(container.getId()).exec();
         containerId = container.getId();
         return containerId;
@@ -69,6 +73,7 @@ public class ContainerProfiling {
 
     /**
      * Blocking function that retrieves all statistics (docker stats) of the container until it terminates.
+     *
      * @return List of statistics
      * @throws ProfilingException When the Thread is interrupted or
      */

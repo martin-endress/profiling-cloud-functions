@@ -48,12 +48,13 @@ public class StatsRetriever {
 
     public void retrieveStats() throws ProfilingException {
         ContainerProfiling profiling = new ContainerProfiling();
-        String containerId = profiling.startContainer();
+        String containerId = profiling.startContainer("JAVA_PARAMS=46");
         System.out.println("Container (id=" + containerId + ") started.");
         containerStartTime = System.currentTimeMillis();
 
 
         Profile p = getProfileUsingDockerApi(profiling);
+        //Profile p = getProfileUsingControlGroups(profiling,containerId);
 
         System.out.println(p.toString());
         p.save();

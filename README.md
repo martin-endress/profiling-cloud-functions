@@ -11,3 +11,16 @@ For example, 'cpuacct.usage' stores the current cpu usage. This is also availabl
 in 'cpuacct.stat',
 user time is the amount of time a process has direct control of the CPU, executing process code.
 system time is the time the kernel is executing system calls on behalf of the process.
+
+
+
+
+|   | property | description |
+|---|---|---|
+|MEM| cache |  |
+|   | swap |   |
+|   | active_anon |   |
+|   | inactive_file |   |
+|   |   |   |
+| CPU | totalCpuUsage | cpu usage in nanoseconds |
+|   | cpu_i | cpu usage of each code in nanoseconds |

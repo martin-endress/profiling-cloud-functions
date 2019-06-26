@@ -11,8 +11,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             System.out.println("handling request");
-            RequestHandlerExecutor loader = new RequestHandlerExecutor("de.uniba.dsg.serverless.functions.mocky.Mocky");
-            loader.invokeHandleRequest("");
+            runFibonacci(args);
         } catch (ProfilingException e) {
             //logger.fatal(e.getMessage());
             System.err.println(e.getMessage());
@@ -21,5 +20,19 @@ public class Main {
                 //logger.fatal(String.format("Caused By: %s", e.getCause().getMessage()));
             }
         }
+    }
+
+    private static void runFibonacci(String[] args) throws ProfilingException {
+        String n = "0";
+        if (args.length > 0) {
+            n = args[0];
+        }
+        RequestHandlerExecutor loader = new RequestHandlerExecutor("de.uniba.dsg.serverless.functions.fibonacci.Fibonacci");
+        loader.invokeHandleRequest(n);
+    }
+
+    private static void runMocky() throws ProfilingException {
+        RequestHandlerExecutor loader = new RequestHandlerExecutor("de.uniba.dsg.serverless.functions.mocky.Mocky");
+        loader.invokeHandleRequest("");
     }
 }

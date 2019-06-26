@@ -6,13 +6,10 @@ WORKDIR $GRADLE_SRC_DIR
 
 RUN gradle build
 
-# second stage
 FROM amazoncorretto:11
 
-ENV RUN_DIR=/home/
-
-COPY --from=builder /home/gradle/src /app/
+COPY --from=builder /home/gradle/src/build/libs/* /app/
 
 WORKDIR /app/
 
-ENTRYPOINT [ "sh", "-c", "java -jar /app/build/libs/profilingCloudFunctions-1.0.jar ${JAVA_PARAMS}" ]
+ENTRYPOINT [ "sh", "-c", "java -jar /app/profilingCloudFunctions-1.0.jar ${JAVA_PARAMS}" ]

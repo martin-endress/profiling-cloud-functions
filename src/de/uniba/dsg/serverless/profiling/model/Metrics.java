@@ -1,16 +1,19 @@
 package de.uniba.dsg.serverless.profiling.model;
 
+import com.github.dockerjava.api.model.MemoryStatsConfig;
 import com.github.dockerjava.api.model.Statistics;
-import de.uniba.dsg.serverless.profiling.util.MetricsUtil;
+import com.github.dockerjava.api.model.StatsConfig;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Metrics {
     private Map<String, Long> metrics;
-    public final List<String> RELEVANT_METRICS = Arrays.asList("time", "cache", "swap", "active_anon", "inactive_file", "user", "system");
+    public List<String> RELEVANT_METRICS = new ArrayList<>();
 
     public Metrics(List<String> lines, long time) throws ProfilingException {
+        RELEVANT_METRICS = Arrays.asList("time", "cache", "swap", "active_anon", "inactive_file", "user", "system");
         metrics = fromLines(lines);
         metrics.put("time", time);
         validate();
@@ -67,26 +70,44 @@ public class Metrics {
         return map;
     }
 
+    /**
+     * asdf
+     *
+     * @param stats statistics
+     * @return Map with Metrics
+     * @throws ProfilingException if MemoryStats or CpuStats are null
+     * @see <a href="https://github.com/moby/moby/issues/29306">https://github.com/moby/moby/issues/29306</a>
+     */
     private Map<String, Long> fromStatistics(Statistics stats) throws ProfilingException {
-        if (stats.getMemoryStats() == null || stats.getMemoryStats().getStats() == null) {
-            throw new ProfilingException("Memory stats must not be null");
+        if (stats.getMemoryStats() == null
+                || stats.getMemoryStats().getStats() == null
+                || stats.getCpuStats() == null
+                || stats.getCpuStats().getCpuUsage() == null) {
+            throw new ProfilingException("Stats must not be null");
         }
         HashMap<String, Long> map = new HashMap<>();
 
-        long cache = Optional.ofNullable(stats.getMemoryStats().getStats().getCache()).orElse(0l);
+        StatsConfig memory = stats.getMemoryStats().getStats();
+        long cache = Optional.ofNullable(memory.getCache()).orElse(-1L);
         map.put("cache", cache);
-        long swap = Optional.ofNullable(stats.getMemoryStats().getStats().getSwap()).orElse(0l);
+        long swap = Optional.ofNullable(memory.getSwap()).orElse(-1L);
         map.put("swap", swap);
-        long activeAnon = Optional.ofNullable(stats.getMemoryStats().getStats().getActiveAnon()).orElse(0l);
+        long activeAnon = Optional.ofNullable(memory.getActiveAnon()).orElse(-1L);
         map.put("active_anon", activeAnon);
-        long inactiveFile = Optional.ofNullable(stats.getMemoryStats().getStats().getInactiveFile()).orElse(0l);
+        long inactiveFile = Optional.ofNullable(memory.getInactiveFile()).orElse(-1L);
         map.put("inactive_file", inactiveFile);
 
-        long private_ = Optional.ofNullable(stats.getCpuStats().getSystemCpuUsage()).orElse(0L);
-        map.put("user", private_);
-        long online = Optional.ofNullable(stats.getCpuStats().getOnlineCpus()).orElse(0L);
-        map.put("system", online);
+        long totalCpu = Optional.ofNullable(stats.getCpuStats().getCpuUsage().getTotalUsage()).orElse(-1L);
+        map.put("totalCpuUsage", totalCpu);
 
+        // per CPU stats
+        //List<Long> usagePerCpu = Optional.ofNullable(stats.getCpuStats().getCpuUsage().getPercpuUsage()).orElse(new ArrayList<>());
+        //IntStream.range(0, usagePerCpu.size()).forEach(i -> map.put("cpu" + i, usagePerCpu.get(i)));
+
+        stats.getCpuStats().getOnlineCpus();
+
+        //stats.getCpuStats()
+        RELEVANT_METRICS = new ArrayList<>(map.keySet());
         return map;
     }
 

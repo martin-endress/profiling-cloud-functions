@@ -8,24 +8,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import java.util.UUID;
 
-public class Fibonacci implements RequestHandler<Map<String, String>, Response> {
+public class Fibonacci implements RequestHandler<String, Response> {
 
     private static final String CONTAINER_ID = UUID.randomUUID().toString();
 
     @Override
-    public Response handleRequest(Map<String, String> parameters, Context context) {
-        String nString = parameters.getOrDefault("n", "");
+    public Response handleRequest(String param, Context context) {
+        // String nString = parameters.getOrDefault("n", "");
 
-        if (!isNumeric(nString)) {
+        if (!isNumeric(param)) {
             return createErrorResponse("Please pass a valid number 'n'.", context.getAwsRequestId());
         }
 
-        long n = Long.parseLong(nString);
-        try {
-            // sleep for 20 seconds
-            Thread.sleep(20_000);
-        } catch (InterruptedException e) {
-        }
+        long n = Long.parseLong(param);
         long result = fibonacci(n);
         System.out.println(result);
 
