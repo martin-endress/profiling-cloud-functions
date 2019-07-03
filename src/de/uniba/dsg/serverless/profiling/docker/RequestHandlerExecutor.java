@@ -1,4 +1,4 @@
-package de.uniba.dsg.serverless.profiling;
+package de.uniba.dsg.serverless.profiling.docker;
 
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import de.uniba.dsg.serverless.profiling.mock.ContextMock;

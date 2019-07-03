@@ -1,4 +1,4 @@
-package de.uniba.dsg.serverless.profiling.docker;
+package de.uniba.dsg.serverless.profiling.profiling;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
@@ -10,6 +10,7 @@ import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.InvocationBuilder.AsyncResultCallback;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
+import de.uniba.dsg.serverless.profiling.util.MetricsUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,15 +61,27 @@ public class ContainerProfiling {
         return startContainer("");
     }
 
+    /**
+     * @param envParams
+     * @return
+     */
     public String startContainer(String envParams) {
         CreateContainerResponse container = client
                 .createContainerCmd(IMAGE_NAME)
                 .withEnv(envParams)
                 .withAttachStdin(true)
                 .exec();
-        client.startContainerCmd(container.getId()).exec();
         containerId = container.getId();
+        client.startContainerCmd(containerId).exec();
         return containerId;
+    }
+
+    public long getStartedAt() throws ProfilingException {
+        String startedAt = client.inspectContainerCmd(containerId)
+                .exec()
+                .getState()
+                .getStartedAt();
+        return new MetricsUtil().parseTime(startedAt);
     }
 
     /**
@@ -118,7 +131,7 @@ public class ContainerProfiling {
      * @return If present, statistics of next read. Empty otherwise.
      * @throws ProfilingException Exception in callback termination.
      */
-    private Optional<Statistics> getNextStatistics() throws ProfilingException {
+    public Optional<Statistics> getNextStatistics() throws ProfilingException {
         AsyncResultCallback<Statistics> callback = new AsyncResultCallback<>();
         client.statsCmd(containerId).exec(callback);
         Statistics s;

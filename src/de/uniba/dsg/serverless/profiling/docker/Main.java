@@ -1,4 +1,4 @@
-package de.uniba.dsg.serverless.profiling;
+package de.uniba.dsg.serverless.profiling.docker;
 
 
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
@@ -12,6 +12,7 @@ public class Main {
         try {
             System.out.println("handling request");
             runFibonacci(args);
+            //runMocky();
         } catch (ProfilingException e) {
             //logger.fatal(e.getMessage());
             System.err.println(e.getMessage());
@@ -27,7 +28,7 @@ public class Main {
         if (args.length > 0) {
             n = args[0];
         }
-        RequestHandlerExecutor loader = new RequestHandlerExecutor("de.uniba.dsg.serverless.functions.fibonacci.Fibonacci");
+        RequestHandlerExecutor loader = new RequestHandlerExecutor("de.uniba.dsg.serverless.functions.mocky.Mocky");
         loader.invokeHandleRequest(n);
     }
 

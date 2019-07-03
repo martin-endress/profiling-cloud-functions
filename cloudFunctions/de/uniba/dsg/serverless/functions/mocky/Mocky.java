@@ -20,13 +20,12 @@ public class Mocky implements RequestHandler<String, Response> {
 
     @Override
     public Response handleRequest(String input, Context context) {
-        target = target.path("v2/5d0ce1cb3500004d00b89b84");
-        target = target.queryParam("mocky-delay", "1s");
-        Invocation.Builder invocationBuilder
-                = target.request(MediaType.APPLICATION_JSON);
+        Invocation.Builder invocationBuilder = target.path("v2/5d0ce1cb3500004d00b89b84")
+                .queryParam("mocky-delay", "100ms")
+                .request(MediaType.APPLICATION_JSON);
 
         long startTime = System.currentTimeMillis();
-        long endTime = startTime + 10_000;
+        long endTime = startTime + 30_000;
         long currentTime = System.currentTimeMillis();
         while (currentTime < endTime) {
             System.out.println("requesting resource... \nremaining time =" + (endTime - currentTime));

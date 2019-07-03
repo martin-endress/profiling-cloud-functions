@@ -1,8 +1,6 @@
 package de.uniba.dsg.serverless.profiling.model;
 
-import com.github.dockerjava.api.model.MemoryStatsConfig;
-import com.github.dockerjava.api.model.Statistics;
-import com.github.dockerjava.api.model.StatsConfig;
+import com.github.dockerjava.api.model.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,10 +8,10 @@ import java.util.stream.IntStream;
 
 public class Metrics {
     private Map<String, Long> metrics;
-    public List<String> RELEVANT_METRICS = new ArrayList<>();
+    public List<String> relevantMetrics = new ArrayList<>();
 
     public Metrics(List<String> lines, long time) throws ProfilingException {
-        RELEVANT_METRICS = Arrays.asList("time", "cache", "swap", "active_anon", "inactive_file", "user", "system");
+        relevantMetrics= new ArrayList<>(Arrays.asList("time", "cache", "swap", "active_anon", "inactive_file", "user", "system"));
         metrics = fromLines(lines);
         metrics.put("time", time);
         validate();
@@ -25,23 +23,40 @@ public class Metrics {
         validate();
     }
 
+    /**
+     * TODO
+     *
+     * @param metrics
+     * @return
+     */
+    public void addMetrics(Metrics metrics) {
+        for (String metricsKey : metrics.relevantMetrics) {
+            Long value = metrics.metrics.get(metricsKey);
+            while (this.metrics.containsKey(metricsKey)) {
+                metricsKey += "_";
+            }
+            this.relevantMetrics.add(metricsKey);
+            this.metrics.put(metricsKey, value);
+        }
+    }
+
     @Override
     public String toString() {
         List<String> out = new ArrayList<>();
-        for (String s : RELEVANT_METRICS) {
+        for (String s : relevantMetrics) {
             out.add(metrics.get(s).toString());
         }
         return out.stream().collect(Collectors.joining(","));
     }
 
     private void validate() throws ProfilingException {
-        for (String s : RELEVANT_METRICS) {
+        for (String s : relevantMetrics) {
             if (!metrics.keySet().contains(s)) {
                 throw new ProfilingException("Metrics does not contain metric: " + s);
             }
         }
-        if (!metrics.keySet().containsAll(RELEVANT_METRICS) || metrics.isEmpty()) {
-            throw new ProfilingException("Metrics must not be empty and contain all RELEVANT_METRICS.");
+        if (!metrics.keySet().containsAll(relevantMetrics) || metrics.isEmpty()) {
+            throw new ProfilingException("Metrics must not be empty and contain all relevantMetrics.");
         }
     }
 
@@ -98,16 +113,25 @@ public class Metrics {
         map.put("inactive_file", inactiveFile);
 
         long totalCpu = Optional.ofNullable(stats.getCpuStats().getCpuUsage().getTotalUsage()).orElse(-1L);
-        map.put("totalCpuUsage", totalCpu);
-
+        map.put("total_cpu_usage", totalCpu);
         // per CPU stats
-        //List<Long> usagePerCpu = Optional.ofNullable(stats.getCpuStats().getCpuUsage().getPercpuUsage()).orElse(new ArrayList<>());
-        //IntStream.range(0, usagePerCpu.size()).forEach(i -> map.put("cpu" + i, usagePerCpu.get(i)));
+        List<Long> usagePerCpu = Optional.ofNullable(stats.getCpuStats().getCpuUsage().getPercpuUsage()).orElse(new ArrayList<>());
+        IntStream.range(0, usagePerCpu.size()).forEach(i -> {
+            map.put("cpu_" + i, usagePerCpu.get(i));
+            relevantMetrics.add("cpu_" + i);
+        });
 
-        stats.getCpuStats().getOnlineCpus();
+        Map<String, StatisticNetworksConfig> networkMap = Optional.ofNullable(stats.getNetworks()).orElse(new HashMap<>());
+        for (Map.Entry<String, StatisticNetworksConfig> c : networkMap.entrySet()) {
+            map.put("tx_bytes", c.getValue().getTxBytes());
+            map.put("rx_bytes", c.getValue().getRxBytes());
+        }
 
-        //stats.getCpuStats()
-        RELEVANT_METRICS = new ArrayList<>(map.keySet());
+        //map.put("time", stats.getRead()); TODO
+
+        relevantMetrics.addAll(Arrays.asList("total_cpu_usage", "cache", "swap", "active_anon", "inactive_file", "tx_bytes", "rx_bytes"));
+
+
         return map;
     }
 

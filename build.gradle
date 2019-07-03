@@ -9,7 +9,7 @@ version '1.0'
 
 sourceCompatibility = 1.8
 
-mainClassName = "de.uniba.dsg.serverless.profiling.Main"
+mainClassName = "de.uniba.dsg.serverless.profiling.docker.Main"
 
 repositories {
     mavenCentral()
@@ -61,7 +61,7 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     manifest {
         attributes(
-                'Main-Class': 'de.uniba.dsg.serverless.profiling.Main'
+                'Main-Class': 'de.uniba.dsg.serverless.profiling.docker.Main'
         )
     }
     from {

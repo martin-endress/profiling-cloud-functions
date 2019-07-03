@@ -56,7 +56,7 @@ public class Profile {
     }
 
     private String getHeader() {
-        return String.join(",", metrics.get(0).RELEVANT_METRICS);
+        return String.join(",", metrics.get(0).relevantMetrics);
     }
 
     private String getUniqueFileName() {

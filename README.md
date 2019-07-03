@@ -17,10 +17,20 @@ system time is the time the kernel is executing system calls on behalf of the pr
 
 |   | property | description |
 |---|---|---|
-|MEM| cache |  |
-|   | swap |   |
+|MEM| cache | memory usage |
+|   | swap | memory in swap |
 |   | active_anon |   |
 |   | inactive_file |   |
 |   |   |   |
-| CPU | totalCpuUsage | cpu usage in nanoseconds |
+|CPU| totalCpuUsage | cpu usage in nanoseconds |
 |   | cpu_i | cpu usage of each code in nanoseconds |
+|   | user | cpu usage in USER_HZ / seconds (usually 100/s) |
+|   | system | time kernel is executing system calls (again 100/s) |
+|   |  |  |
+|I/O| blkio.sectors |  |
+
+
+ressourcen einschränken, RAM und CPU dazu skalieren
+io - cpu container
+vergleich cgroups vs docker api detailliert..
+
