@@ -8,6 +8,8 @@ version '1.0'
 
 sourceCompatibility = 1.8
 
+//mainClassName = "de.uniba.dsg.serverless.profiling.executor.Main"
+
 repositories {
     mavenCentral()
 }
@@ -53,13 +55,22 @@ dependencies {
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
+
+    // local dependencies
+    // local request handlers of cloud functions (depends on cloudFunctions.jar)
+    compile files('../cloudFunctions/build/libs/cloudFunctions.jar')
 }
 
 jar {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    manifest {
+        attributes(
+                'Main-Class': 'de.uniba.dsg.serverless.profiling.executor.Main'
+        )
+    }
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-        archiveName "cloudFunctions.jar"
     }
+    // https://github.com/docker-java/docker-java/issues/1098
+    exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
 }
-

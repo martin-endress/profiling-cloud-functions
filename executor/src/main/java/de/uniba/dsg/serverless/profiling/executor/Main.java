@@ -1,7 +1,5 @@
-package de.uniba.dsg.serverless.profiling.docker;
+package de.uniba.dsg.serverless.profiling.executor;
 
-
-import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 
 public class Main {
 

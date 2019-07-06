@@ -1,4 +1,4 @@
-package de.uniba.dsg.serverless.profiling.mock;
+package de.uniba.dsg.serverless.profiling.executor;
 
 import com.amazonaws.services.lambda.runtime.ClientContext;
 import com.amazonaws.services.lambda.runtime.CognitoIdentity;

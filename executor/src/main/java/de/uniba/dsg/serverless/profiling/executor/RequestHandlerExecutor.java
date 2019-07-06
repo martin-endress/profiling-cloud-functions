@@ -1,13 +1,9 @@
-package de.uniba.dsg.serverless.profiling.docker;
+package de.uniba.dsg.serverless.profiling.executor;
 
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import de.uniba.dsg.serverless.profiling.mock.ContextMock;
-import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class RequestHandlerExecutor {
 

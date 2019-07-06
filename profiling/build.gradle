@@ -9,7 +9,7 @@ version '1.0'
 
 sourceCompatibility = 1.8
 
-mainClassName = "de.uniba.dsg.serverless.profiling.docker.Main"
+mainClassName = "de.uniba.dsg.serverless.profiling.StatsRetriever"
 
 repositories {
     mavenCentral()
@@ -56,17 +56,13 @@ dependencies {
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
-
-    // local dependencies
-    // local request handlers of cloud functions (depends on cloudFunctions.jar)
-    compile files('../cloudFunctions/build/libs/cloudFunctions.jar')
 }
 
 jar {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     manifest {
         attributes(
-                'Main-Class': 'de.uniba.dsg.serverless.profiling.docker.Main'
+                'Main-Class': 'de.uniba.dsg.serverless.profiling.StatsRetriever'
         )
     }
     from {

@@ -1,1 +1,1 @@
-tasks.getByPath(':profiling:jar').dependsOn(':cloudFunctions:jar')
+tasks.getByPath(':executor:jar').dependsOn(':cloudFunctions:jar')
