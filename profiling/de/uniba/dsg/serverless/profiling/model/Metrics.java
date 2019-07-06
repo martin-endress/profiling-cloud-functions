@@ -1,39 +1,40 @@
 package de.uniba.dsg.serverless.profiling.model;
 
-import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.api.model.StatisticNetworksConfig;
+import com.github.dockerjava.api.model.Statistics;
+import de.uniba.dsg.serverless.profiling.util.MetricsUtil;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Metrics {
     private Map<String, Long> metrics;
     public List<String> relevantMetrics = new ArrayList<>();
+    private MetricsUtil util = new MetricsUtil();
 
     public Metrics(List<String> lines, long time) throws ProfilingException {
-        relevantMetrics= new ArrayList<>(Arrays.asList("time", "cache", "swap", "active_anon", "inactive_file", "user", "system"));
+        relevantMetrics = new ArrayList<>(Arrays.asList("time", "user", "system"));
         metrics = fromLines(lines);
         metrics.put("time", time);
         validate();
     }
 
-    public Metrics(Statistics stats, long time) throws ProfilingException {
-        metrics = fromStatistics(stats);
-        metrics.put("time", time);
+    public Metrics(Statistics stats, long containerStartTime) throws ProfilingException {
+        metrics = fromStatistics(stats, containerStartTime);
         validate();
     }
 
     /**
-     * TODO
+     * Adds all metrics entries to the set.
      *
-     * @param metrics
-     * @return
+     * @param metrics RelevantMetrics must be distinct and not contain any existing keys
+     * @throws ProfilingException when a duplicate is key is present.
      */
-    public void addMetrics(Metrics metrics) {
+    public void addMetrics(Metrics metrics) throws ProfilingException {
         for (String metricsKey : metrics.relevantMetrics) {
             Long value = metrics.metrics.get(metricsKey);
-            while (this.metrics.containsKey(metricsKey)) {
-                metricsKey += "_";
+            if (this.metrics.containsKey(metricsKey)) {
+                throw new ProfilingException("Merging two Metrices failed. Duplicate key: " + metricsKey);
             }
             this.relevantMetrics.add(metricsKey);
             this.metrics.put(metricsKey, value);
@@ -46,15 +47,10 @@ public class Metrics {
         for (String s : relevantMetrics) {
             out.add(metrics.get(s).toString());
         }
-        return out.stream().collect(Collectors.joining(","));
+        return String.join(",", out);
     }
 
     private void validate() throws ProfilingException {
-        for (String s : relevantMetrics) {
-            if (!metrics.keySet().contains(s)) {
-                throw new ProfilingException("Metrics does not contain metric: " + s);
-            }
-        }
         if (!metrics.keySet().containsAll(relevantMetrics) || metrics.isEmpty()) {
             throw new ProfilingException("Metrics must not be empty and contain all relevantMetrics.");
         }
@@ -93,27 +89,19 @@ public class Metrics {
      * @throws ProfilingException if MemoryStats or CpuStats are null
      * @see <a href="https://github.com/moby/moby/issues/29306">https://github.com/moby/moby/issues/29306</a>
      */
-    private Map<String, Long> fromStatistics(Statistics stats) throws ProfilingException {
-        if (stats.getMemoryStats() == null
-                || stats.getMemoryStats().getStats() == null
-                || stats.getCpuStats() == null
-                || stats.getCpuStats().getCpuUsage() == null) {
-            throw new ProfilingException("Stats must not be null");
-        }
+    private Map<String, Long> fromStatistics(Statistics stats, long containerStartTime) throws ProfilingException {
+        validateStats(stats);
         HashMap<String, Long> map = new HashMap<>();
 
-        StatsConfig memory = stats.getMemoryStats().getStats();
-        long cache = Optional.ofNullable(memory.getCache()).orElse(-1L);
-        map.put("cache", cache);
-        long swap = Optional.ofNullable(memory.getSwap()).orElse(-1L);
-        map.put("swap", swap);
-        long activeAnon = Optional.ofNullable(memory.getActiveAnon()).orElse(-1L);
-        map.put("active_anon", activeAnon);
-        long inactiveFile = Optional.ofNullable(memory.getInactiveFile()).orElse(-1L);
-        map.put("inactive_file", inactiveFile);
+        long time = util.parseTime(stats.getRead());
+        long relativeTime = time - containerStartTime;
+        map.put("stats_time", relativeTime);
+        relevantMetrics.add("stats_time");
 
         long totalCpu = Optional.ofNullable(stats.getCpuStats().getCpuUsage().getTotalUsage()).orElse(-1L);
-        map.put("total_cpu_usage", totalCpu);
+        map.put("stats_total_cpu_usage", totalCpu);
+        relevantMetrics.add("stats_total_cpu_usage");
+
         // per CPU stats
         List<Long> usagePerCpu = Optional.ofNullable(stats.getCpuStats().getCpuUsage().getPercpuUsage()).orElse(new ArrayList<>());
         IntStream.range(0, usagePerCpu.size()).forEach(i -> {
@@ -123,16 +111,38 @@ public class Metrics {
 
         Map<String, StatisticNetworksConfig> networkMap = Optional.ofNullable(stats.getNetworks()).orElse(new HashMap<>());
         for (Map.Entry<String, StatisticNetworksConfig> c : networkMap.entrySet()) {
-            map.put("tx_bytes", c.getValue().getTxBytes());
-            map.put("rx_bytes", c.getValue().getRxBytes());
+            // prepend network name if there is more than one network
+            String networkName = networkMap.size() != 1 ? c.getKey() : "";
+            map.put(networkName + "rx_bytes", c.getValue().getRxBytes());
+            map.put(networkName + "rx_dropped", c.getValue().getRxDropped());
+            map.put(networkName + "rx_errors", c.getValue().getRxErrors());
+            map.put(networkName + "rx_packets", c.getValue().getRxPackets());
+            map.put(networkName + "tx_bytes", c.getValue().getTxBytes());
+            map.put(networkName + "tx_dropped", c.getValue().getTxDropped());
+            map.put(networkName + "tx_errors", c.getValue().getTxErrors());
+            map.put(networkName + "tx_packets", c.getValue().getTxPackets());
+
+            relevantMetrics.addAll(Arrays.asList(
+                    networkName + "rx_bytes",
+                    networkName + "rx_dropped",
+                    networkName + "rx_errors",
+                    networkName + "rx_packets",
+                    networkName + "tx_bytes",
+                    networkName + "tx_dropped",
+                    networkName + "tx_errors",
+                    networkName + "tx_packets"));
         }
 
-        //map.put("time", stats.getRead()); TODO
-
-        relevantMetrics.addAll(Arrays.asList("total_cpu_usage", "cache", "swap", "active_anon", "inactive_file", "tx_bytes", "rx_bytes"));
-
-
         return map;
+    }
+
+    private void validateStats(Statistics stats) throws ProfilingException {
+        if (stats.getMemoryStats() == null
+                || stats.getMemoryStats().getStats() == null
+                || stats.getCpuStats() == null
+                || stats.getCpuStats().getCpuUsage() == null) {
+            throw new ProfilingException("Stats must not be null");
+        }
     }
 
 }

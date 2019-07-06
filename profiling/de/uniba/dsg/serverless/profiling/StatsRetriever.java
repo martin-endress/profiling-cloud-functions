@@ -30,6 +30,7 @@ public class StatsRetriever {
             Optional.ofNullable(e.getCause())
                     .map(Throwable::getMessage)
                     .ifPresent(System.err::println);
+            e.printStackTrace();
         }
     }
 
@@ -55,7 +56,7 @@ public class StatsRetriever {
         ControlGroupProfiling controlGroupProfiling = new ControlGroupProfiling(containerId, containerStartTime);
         Optional<Statistics> statistics = profiling.getNextStatistics();
         while (statistics.isPresent()) {
-            Metrics apiMetrics = new Metrics(statistics.get(), 0L);
+            Metrics apiMetrics = new Metrics(statistics.get(), containerStartTime);
             Metrics cgMetrics = controlGroupProfiling.getMetric();
             cgMetrics.addMetrics(apiMetrics);
             metrics.add(cgMetrics);
@@ -80,7 +81,7 @@ public class StatsRetriever {
         List<Statistics> stats = profiling.logStatistics();
         List<Metrics> metrics = new ArrayList<>();
         for (Statistics s : stats) {
-            metrics.add(new Metrics(s, 0));
+            metrics.add(new Metrics(s, containerStartTime));
         }
         InspectContainerResponse additional = profiling.inspectContainer();
         return new Profile(metrics, additional);
