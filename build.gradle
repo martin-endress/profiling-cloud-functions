@@ -16,7 +16,7 @@ repositories {
 }
 
 sourceSets {
-    main.java.srcDirs = ['src','cloudFunctions']
+    main.java.srcDirs = ['src', 'cloudFunctions', 'serviceMock/main/java']
 }
 
 idea {
@@ -42,6 +42,11 @@ dependencies {
     compile group: 'com.github.docker-java', name: 'docker-java', version: '3.1.2'
 
     // https://mvnrepository.com/artifact/org.glassfish.jersey.core/jersey-client
+    compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: '2.28'
+    compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-jdk-http', version: '2.28'
+    compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet-core', version: '2.28'
+    compile group: 'org.glassfish.jersey.media', name: 'jersey-media-moxy', version: '2.28'
+    compile group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: '2.28'
     compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: '2.28'
 
     // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
@@ -72,10 +77,23 @@ jar {
 }
 
 task jarCloudFunctions(type: Jar) {
-    from (sourceSets.main.output) {
+    from(sourceSets.main.output) {
         include "de/uniba/dsg/serverless/functions/**"
         archiveName "cloudFunctions.jar"
     }
 }
 
+task jarServiceMock(type: Jar) {
+    manifest {
+        attributes(
+                'Main-Class': 'de.uniba.dsg.serverless.serviceMock.Main'
+        )
+        archiveName "serviceMock.jar"
+    }
+    from {
+        sourceSets.main.output
+    }
+}
+
 jar.dependsOn jarCloudFunctions
+jar.dependsOn jarServiceMock

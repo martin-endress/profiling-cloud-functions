@@ -1,7 +1,7 @@
 FROM gradle:jdk11 AS builder
 
 ENV GRADLE_SRC_DIR=/home/gradle/src
-COPY . $GRADLE_SRC_DIR
+COPY .. $GRADLE_SRC_DIR
 WORKDIR $GRADLE_SRC_DIR
 
 RUN gradle build

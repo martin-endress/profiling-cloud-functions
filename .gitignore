@@ -114,3 +114,5 @@ bin
 
 # profiles
 /profiles
+# out dir (logs and stuff)
+/out
