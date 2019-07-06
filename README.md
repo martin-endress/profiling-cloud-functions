@@ -1,4 +1,12 @@
-BachelorArbeit von Martin Endreß
+# BachelorArbeit von Martin Endreß
+
+## TODOs
+
+ressourcen einschränken, RAM und CPU dazu skalieren
+io - cpu container
+vergleich cgroups vs docker api detailliert..
+
+## Notes
 
 docker stats are retrieved from information about control groups.
 
@@ -12,8 +20,7 @@ in 'cpuacct.stat',
 user time is the amount of time a process has direct control of the CPU, executing process code.
 system time is the time the kernel is executing system calls on behalf of the process.
 
-
-
+## cgroup information
 
 |   | property | description |
 |---|---|---|
@@ -30,7 +37,9 @@ system time is the time the kernel is executing system calls on behalf of the pr
 |I/O| blkio.sectors |  |
 
 
-ressourcen einschränken, RAM und CPU dazu skalieren
-io - cpu container
-vergleich cgroups vs docker api detailliert..
+## Environment
+
+Currently, the docker container name is hardcoded to mendress/profiling. Therefore, the following command must be used to build the container.
+
+docker build -t mendress/profiling -f executor/Dockerfile .
 
