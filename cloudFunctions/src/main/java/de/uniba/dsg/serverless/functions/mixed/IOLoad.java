@@ -1,7 +1,5 @@
 package de.uniba.dsg.serverless.functions.mixed;
 
-import de.uniba.dsg.serverless.profiling.model.ProfilingException;
-
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;

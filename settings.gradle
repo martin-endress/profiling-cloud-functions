@@ -1,2 +1,4 @@
 rootProject.name = 'profilingCloudFunctions'
-
+include ':profiling'
+include ':serviceMock'
+include ':cloudFunctions'

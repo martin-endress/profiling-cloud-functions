@@ -1,15 +1,14 @@
 FROM gradle:jdk11 AS builder
 
-ENV GRADLE_SRC_DIR=/home/gradle/src
-COPY .. $GRADLE_SRC_DIR
-WORKDIR $GRADLE_SRC_DIR
+WORKDIR /home/gradle/
+COPY . .
 
-RUN gradle build
+RUN gradle :profiling:build
 
 FROM amazoncorretto:11
 
-COPY --from=builder /home/gradle/src/build/libs/* /app/
+COPY --from=builder /home/gradle/profiling/build/libs/* /app/
 
 WORKDIR /app/
 
-CMD [ "sh", "-c", "java -jar /app/profilingCloudFunctions-1.0.jar ${JAVA_PARAMS}" ]
+CMD [ "sh", "-c", "java -jar profiling-1.0.jar ${JAVA_PARAMS}" ]
