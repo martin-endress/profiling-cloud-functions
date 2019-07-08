@@ -1,5 +1,7 @@
 package de.uniba.dsg.serverless.functions.mixed;
 
+import com.google.common.util.concurrent.Uninterruptibles;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
@@ -12,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -19,13 +22,11 @@ public class IOLoad implements Runnable {
 
     private final int from;
     private final int to;
+    private final long size;
     private final long time;
 
-    // http://www.mocky.io/v2/5d09fe3e3400001129d831d0
-    private final Client client;
-    private static final String MOCKY_URL = "http://www.mocky.io";
+    private static final String MOCKY_URL = "http://www.mocky.io/v2/5d2361b32e0000e7a5c3f08f";
     private final WebTarget target;
-    private final Invocation.Builder invocationBuilder;
 
     /**
      * @param from start interval (number of requests per second)
@@ -36,54 +37,72 @@ public class IOLoad implements Runnable {
     public IOLoad(int from, int to, int size, long time) {
         this.from = Math.max(0, from);
         this.to = Math.max(0, to);
+        this.size = size;
         this.time = time;
 
-        client = ClientBuilder.newClient();
+        Client client = ClientBuilder.newClient();
         target = client.target(MOCKY_URL);
-        invocationBuilder = target.path("v2/5d0ce1cb3500004d00b89b84")
-                //.queryParam("mocky-delay", "1s")
-                .request(MediaType.APPLICATION_JSON);
     }
 
     @Override
     public void run() {
+
+        // TODO replace this with a more general approach, define load pattern first and then execute it.
+        System.out.println("running io load");
         List<Integer> loadLog = new ArrayList<>();
         long startTime = System.currentTimeMillis();
         long endTime = startTime + time;
-        for (long invocation = startTime; System.currentTimeMillis() < endTime; invocation += 1000) {
-            float progress = (System.currentTimeMillis() - startTime) / (1F * (endTime - startTime));
+
+        long interval = 1_000;
+
+        long nextInvocation = startTime;
+        while (System.currentTimeMillis() < endTime) {
+            float progress = (nextInvocation - startTime) / (1F * (endTime - startTime));
             int load = Math.round(from + (to - from) * progress);
             IntStream.range(0, load)
                     .parallel()
-                    .forEach(a -> invocationBuilder.get());
+                    .forEach(a -> invokeFunction(0, (int) size));
 
-            long toNextInvocation = invocation - System.currentTimeMillis();
+            nextInvocation += interval;
+            long toNextInvocation = nextInvocation - System.currentTimeMillis();
             if (toNextInvocation < 0) {
                 // TODO: do something
+                System.out.println("DELTA NEXT INVOCATION" + toNextInvocation);
             }
             loadLog.add(load);
 
             toNextInvocation = Math.max(toNextInvocation, 0);
 
-            try {
-                Thread.sleep(toNextInvocation);
-            } catch (InterruptedException ignored) {
-            }
+            Uninterruptibles.sleepUninterruptibly(toNextInvocation, TimeUnit.MILLISECONDS);
         }
         writeLoadToFile(loadLog, "load");
     }
 
-    private Path writeLoadToFile(List<Integer> timestamps, String fileName) {
+    private String invokeFunction(int delay, int size) {
+        return target
+                //.queryParam("delay", delay)
+                //.queryParam("size", size)
+                .request(MediaType.TEXT_PLAIN)
+                .get()
+                .toString();
+    }
+
+    private Path writeLoadToFile(List<Integer> invocations, String fileName) {
         Path path = Paths.get("logs", fileName + ".csv");
 
+        // TODO make this modular
         try {
             Files.createDirectories(path.getParent());
-            List<String> lines = timestamps.stream().map(t -> t.toString()).collect(Collectors.toList());
-            return Files.write(path, lines, StandardCharsets.UTF_8);
+            List<String> lines1 = IntStream.range(0, invocations.size())
+                    .mapToObj(i -> i + "," + invocations.get(i))
+                    .collect(Collectors.toList());
+            List<String> lines = invocations.stream().map(t -> t.toString()).collect(Collectors.toList());
+            lines1.add(0, "time,invocations");
+            return Files.write(path, lines1, StandardCharsets.UTF_8);
         } catch (IOException e) {
             System.err.println("Unable to write load to file: " + e.getMessage());
+            return path;
         }
-        return path;
     }
 
 }

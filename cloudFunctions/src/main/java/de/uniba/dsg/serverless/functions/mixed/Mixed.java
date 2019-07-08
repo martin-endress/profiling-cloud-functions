@@ -2,6 +2,7 @@ package de.uniba.dsg.serverless.functions.mixed;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.google.common.util.concurrent.Uninterruptibles;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,20 +16,17 @@ public class Mixed implements RequestHandler<String, String> {
 
     @Override
     public String handleRequest(String input, Context context) {
-        long loadTime = 30_000;
+        long loadTime = 120_000;
 
-        CPULoad cpuLoad = new CPULoad(0, 1, loadTime);
-        IOLoad ioLoad = new IOLoad(0, 10, 0, loadTime);
+        CPULoad cpuLoad = new CPULoad(1, 0, loadTime);
+        IOLoad ioLoad = new IOLoad(10, 20, 100_000, loadTime);
 
         ExecutorService service = Executors.newFixedThreadPool(2);
-        service.submit(ioLoad);
+        //service.submit(ioLoad);
         service.submit(cpuLoad);
 
-        try {
-            Thread.sleep(loadTime);
-        } catch (InterruptedException ignored) {
-        }
 
+        Uninterruptibles.sleepUninterruptibly(loadTime, TimeUnit.MILLISECONDS);
         shutdownAndAwaitTermination(service);
 
         return "";
@@ -38,8 +36,7 @@ public class Mixed implements RequestHandler<String, String> {
         pool.shutdown();
         try {
             if (!pool.awaitTermination(10, TimeUnit.SECONDS)) {
-                pool.shutdownNow(); // Cancel currently executing tasks
-                // Wait a while for tasks to respond to being cancelled
+                pool.shutdownNow();
                 if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
                     System.err.println("Pool did not terminate");
                 }

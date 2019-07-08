@@ -110,6 +110,9 @@ public class Metrics {
         });
 
         Map<String, StatisticNetworksConfig> networkMap = Optional.ofNullable(stats.getNetworks()).orElse(new HashMap<>());
+        if (networkMap.isEmpty()) {
+            throw new ProfilingException("Networkmap is empty. ");
+        }
         for (Map.Entry<String, StatisticNetworksConfig> c : networkMap.entrySet()) {
             // prepend network name if there is more than one network
             String networkName = networkMap.size() != 1 ? c.getKey() : "";

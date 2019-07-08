@@ -6,14 +6,22 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.InvocationBuilder.AsyncResultCallback;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 import de.uniba.dsg.serverless.profiling.util.MetricsUtil;
+import jdk.internal.util.xml.impl.Input;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class ContainerProfiling {
@@ -69,6 +77,7 @@ public class ContainerProfiling {
         CreateContainerResponse container = client
                 .createContainerCmd(IMAGE_NAME)
                 .withEnv(envParams)
+                //.withHostConfig(new HostConfig().withNetworkMode("host"))
                 .withAttachStdin(true)
                 .exec();
         containerId = container.getId();
@@ -146,6 +155,19 @@ public class ContainerProfiling {
             return Optional.empty();
         }
         return Optional.of(s);
+    }
+
+    public void getFileFromContainer(String containerPath, Path localPath) throws ProfilingException {
+        // TODO FIX THIS
+        try (InputStream input = client.copyArchiveFromContainerCmd(containerId, containerPath).exec()) {
+            //byte[] buffer = new byte[input.available()];
+            //input.read(buffer);
+
+            //Files.write(localPath, buffer);
+            FileUtils.copyInputStreamToFile(input, localPath.toFile());
+        } catch (IOException e) {
+            throw new ProfilingException(e);
+        }
     }
 
 }

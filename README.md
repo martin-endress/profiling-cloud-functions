@@ -2,9 +2,16 @@
 
 ## TODOs
 
+plot
 ressourcen einschränken, RAM und CPU dazu skalieren
 io - cpu container
 vergleich cgroups vs docker api detailliert..
+
+## smaller TODOs
+
+build container in java
+copy logs in java
+
 
 ## Notes
 
