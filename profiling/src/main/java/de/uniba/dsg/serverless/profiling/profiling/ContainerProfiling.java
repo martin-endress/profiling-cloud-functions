@@ -3,25 +3,24 @@ package de.uniba.dsg.serverless.profiling.profiling;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.InvocationBuilder.AsyncResultCallback;
+import com.github.dockerjava.core.command.BuildImageResultCallback;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 import de.uniba.dsg.serverless.profiling.util.MetricsUtil;
-import jdk.internal.util.xml.impl.Input;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class ContainerProfiling {
@@ -32,8 +31,7 @@ public class ContainerProfiling {
     private String containerId;
 
     public ContainerProfiling() {
-        client = DockerClientBuilder.getInstance().build();
-        this.containerId = "";
+        this("");
     }
 
     public ContainerProfiling(String containerId) {
@@ -41,28 +39,28 @@ public class ContainerProfiling {
         this.containerId = containerId;
     }
 
+    /**
+     * Build the execution image defined in executor/Dockerfile.
+     *
+     * @return Image id
+     * @throws ProfilingException if either
+     */
     public String buildContainer() throws ProfilingException {
-        // FIXME
-        AsyncResultCallback<BuildResponseItem> resultCallback = new AsyncResultCallback();
-        client.buildImageCmd(new File("."))
-                .withTags(new HashSet<>(Arrays.asList(IMAGE_NAME)))
-                .exec(resultCallback);
-        BuildResponseItem buildResponse;
+        File baseDir = new File(".");
+        File dockerFile = new File("executor/Dockerfile");
+        if (!baseDir.isDirectory() || !dockerFile.isFile()) {
+            throw new ProfilingException("Failed to build docker image.");
+        }
         try {
-            buildResponse = resultCallback.awaitResult();
-            System.out.println(buildResponse.toString());
-            System.out.println(buildResponse.getAux().getDigest());
-            System.out.println(buildResponse.getAux().toString());
-        } catch (RuntimeException e) {
-            throw new ProfilingException(e);
+            return client.buildImageCmd(dockerFile)
+                    .withBaseDirectory(baseDir)
+                    .withDockerfile(dockerFile)
+                    .withTags(new HashSet<>(Arrays.asList(IMAGE_NAME)))
+                    .exec(new BuildImageResultCallback())
+                    .awaitImageId();
+        } catch (DockerClientException e) {
+            throw new ProfilingException("Failed to build docker image.", e);
         }
-        if (!buildResponse.isBuildSuccessIndicated()) {
-            String error = Optional
-                    .ofNullable(buildResponse.getStream())
-                    .orElse("");
-            throw new ProfilingException("Build was unsuccessful. " + error);
-        }
-        return buildResponse.toString();
     }
 
     public String startContainer() {
@@ -77,7 +75,6 @@ public class ContainerProfiling {
         CreateContainerResponse container = client
                 .createContainerCmd(IMAGE_NAME)
                 .withEnv(envParams)
-                //.withHostConfig(new HostConfig().withNetworkMode("host"))
                 .withAttachStdin(true)
                 .exec();
         containerId = container.getId();
@@ -157,17 +154,47 @@ public class ContainerProfiling {
         return Optional.of(s);
     }
 
-    public void getFileFromContainer(String containerPath, Path localPath) throws ProfilingException {
-        // TODO FIX THIS
-        try (InputStream input = client.copyArchiveFromContainerCmd(containerId, containerPath).exec()) {
-            //byte[] buffer = new byte[input.available()];
-            //input.read(buffer);
-
-            //Files.write(localPath, buffer);
-            FileUtils.copyInputStreamToFile(input, localPath.toFile());
+    /**
+     * Copies all Files in a directory (or a single file) to the desired location.
+     * <p>
+     * Example Usage:<br>
+     * <code>profiling.getFilesFromContainer("/app/logs/", Paths.get("profiles/profileXYZ/logs/");</code>
+     *
+     * @param containerFolder absolute path to the folder or file inside the container
+     * @param localFolder     path to folder for resulting file(s)
+     * @throws ProfilingException
+     */
+    public void getFilesFromContainer(String containerFolder, Path localFolder) throws ProfilingException {
+        try (TarArchiveInputStream tarStream = new TarArchiveInputStream(
+                client.copyArchiveFromContainerCmd(containerId, containerFolder).exec())) {
+            unTar(tarStream, localFolder);
         } catch (IOException e) {
-            throw new ProfilingException(e);
+            throw new ProfilingException("Copying file(s) failed.", e);
         }
+    }
+
+
+    /**
+     * Adapted from https://github.com/docker-java/docker-java/issues/991
+     * <p>
+     * Copies files to destination folder while creating subdirectories
+     *
+     * @param tarInputStream    input stream
+     * @param destinationFolder destination
+     * @throws IOException
+     */
+    private void unTar(TarArchiveInputStream tarInputStream, Path destinationFolder) throws IOException {
+        TarArchiveEntry tarEntry = null;
+        while ((tarEntry = tarInputStream.getNextTarEntry()) != null) {
+            if (tarEntry.isFile()) {
+                Path filePath = destinationFolder.resolve(tarEntry.getName());
+                Files.createDirectories(filePath.getParent());
+                try (FileOutputStream fos = new FileOutputStream(filePath.toFile())) {
+                    IOUtils.copy(tarInputStream, fos);
+                }
+            }
+        }
+        tarInputStream.close();
     }
 
 }
