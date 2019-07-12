@@ -2,30 +2,38 @@
 
 ## TODOs
 
-plot
 ressourcen einschränken, RAM und CPU dazu skalieren
-io - cpu container
 vergleich cgroups vs docker api detailliert..
 
-## smaller TODOs
+## Overview
 
-build container in java
-copy logs in java
+```bash
+├── cloudFunctions       | set of test cloud functions
+│   ├── build            | built cloud functions 
+│   ├── build.gradle     | 
+│   └── src              | 
+├── executor             | cloud function executor
+│   ├── build.gradle     | 
+│   ├── Dockerfile       | definition of the docker container
+│   └── src              | 
+├── profiles             | result profiles and container logs
+│   ├── Profile 1        |
+│   └── Profile 2        | 
+├── profiling            | retrieves docker statistics and cgroup information from running containers
+│   ├── build.gradle     | 
+│   └── src              | 
+├── README.md            | this file
+├── serviceMock          | service which generates response of certain size after a delay /api/getResponse?size=[size]&delay=[delay]
+│   ├── Dockerfile       | definition of the docker container
+│   └── src              | 
+└── settings.gradle      | project settings
+```
 
+## Getting Started
 
-## Notes
-
-docker stats are retrieved from information about control groups.
-
-these are available in /sys/fs/cgroup/<type>/docker/<long_id>/
-
-type can be 'memory', 'cpu'
-
-For example, 'cpuacct.usage' stores the current cpu usage. This is also available in stats (every 1s).
-
-in 'cpuacct.stat',
-user time is the amount of time a process has direct control of the CPU, executing process code.
-system time is the time the kernel is executing system calls on behalf of the process.
+Start the stats retriever.  
+From there, both the service mock image and profiling image is built. After that, they are executed and a new profile is created.  
+No parameters are needed. Currently (ugly), the IO/CPU load pattern is defined inside `cloudFunctions/../Mixed`.
 
 ## cgroup information
 
@@ -42,11 +50,3 @@ system time is the time the kernel is executing system calls on behalf of the pr
 |   | system | time kernel is executing system calls (again 100/s) |
 |   |  |  |
 |I/O| blkio.sectors |  |
-
-
-## Environment
-
-Currently, the docker container name is hardcoded to mendress/profiling. Therefore, the following command must be used to build the container.
-
-docker build -t mendress/profiling -f executor/Dockerfile .
-
