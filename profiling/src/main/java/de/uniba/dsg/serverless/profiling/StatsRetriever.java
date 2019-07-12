@@ -9,14 +9,18 @@ import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 import de.uniba.dsg.serverless.profiling.profiling.ContainerProfiling;
 import de.uniba.dsg.serverless.profiling.profiling.ControlGroupProfiling;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class StatsRetriever {
     private final long startTime;
     private long containerStartTime = 0L;
+
+    public static final String EXECUTOR_DOCKERFILE = "executor/Dockerfile";
+    public static final String EXECUTOR_IMAGE = "mendress/executor";
+    public static final String SERVICE_MOCK_DOCKERFILE = "serviceMock/Dockerfile";
+    public static final String SERVICE_MOCK_IMAGE = "mendress/servicemock";
+
 
     public StatsRetriever() {
         startTime = System.currentTimeMillis();
@@ -35,15 +39,31 @@ public class StatsRetriever {
     }
 
     public void retrieveStats() throws ProfilingException {
-        ContainerProfiling profiling = new ContainerProfiling();
-        String containerId = profiling.startContainer("JAVA_PARAMS=46");
-        containerStartTime = profiling.getStartedAt();
+        ContainerProfiling serviceMock = new ContainerProfiling(SERVICE_MOCK_DOCKERFILE, SERVICE_MOCK_IMAGE);
+        ContainerProfiling executor = new ContainerProfiling(EXECUTOR_DOCKERFILE, EXECUTOR_IMAGE);
+        boolean build = true;
+        if (build) {
+            // TODO parallel builds ?
+            System.out.println("building container ..");
+            //String imageId = serviceMock.buildContainer();
+            //System.out.println(imageId);
+            String imageId = executor.buildContainer();
+            System.out.println(imageId);
+        }
+
+        serviceMock.startContainer();
+        Map<String, String> environment = new HashMap<>();
+        environment.put("MOCK_IP", serviceMock.getIpAddress());
+        environment.put("MOCK_PORT","9000");
+
+        String containerId = executor.startContainer(environment);
+        containerStartTime = executor.getStartedAt();
         System.out.println("Container started. (id=" + containerId + "/ startedAt=" + containerStartTime + ")");
 
         Profile p;
         //p = getProfileUsingDockerApi(profiling);
         //p = getProfileUsingControlGroups(profiling, containerId);
-        p = getProfileUsingBoth(profiling, containerId);
+        p = getProfileUsingBoth(executor, containerId);
 
 
         System.out.println(p.toString());

@@ -6,10 +6,13 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.InvocationBuilder.AsyncResultCallback;
 import com.github.dockerjava.core.command.BuildImageResultCallback;
+import com.google.common.collect.Sets;
+import de.uniba.dsg.serverless.profiling.StatsRetriever;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 import de.uniba.dsg.serverless.profiling.util.MetricsUtil;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -22,21 +25,25 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ContainerProfiling {
 
-    public final String IMAGE_NAME = "mendress/profiling";
+    private String containerId;
+    private String imageId;
+    public final File dockerFile;
+    public final String imageName;
     private final String IS_RUNNING = "running";
     private final DockerClient client;
-    private String containerId;
 
-    public ContainerProfiling() {
-        this("");
-    }
+    public ContainerProfiling(String dockerFile, String imageName) throws ProfilingException {
+        this.imageName = imageName;
+        this.dockerFile = new File(dockerFile);
 
-    public ContainerProfiling(String containerId) {
+        if (!this.dockerFile.exists() || !this.dockerFile.isFile()) {
+            throw new ProfilingException("Dockerfile does not exist. (" + dockerFile + ")");
+        }
         client = DockerClientBuilder.getInstance().build();
-        this.containerId = containerId;
     }
 
     /**
@@ -47,34 +54,31 @@ public class ContainerProfiling {
      */
     public String buildContainer() throws ProfilingException {
         File baseDir = new File(".");
-        File dockerFile = new File("executor/Dockerfile");
-        if (!baseDir.isDirectory() || !dockerFile.isFile()) {
-            throw new ProfilingException("Failed to build docker image.");
-        }
         try {
-            return client.buildImageCmd(dockerFile)
+            imageId = client.buildImageCmd(dockerFile)
                     .withBaseDirectory(baseDir)
                     .withDockerfile(dockerFile)
-                    .withTags(new HashSet<>(Arrays.asList(IMAGE_NAME)))
+                    .withTags(Collections.singleton(imageName))
                     .exec(new BuildImageResultCallback())
                     .awaitImageId();
+            return imageId;
         } catch (DockerClientException e) {
             throw new ProfilingException("Failed to build docker image.", e);
         }
     }
 
     public String startContainer() {
-        return startContainer("");
+        return startContainer(new HashMap<>());
     }
 
     /**
      * @param envParams
      * @return
      */
-    public String startContainer(String envParams) {
+    public String startContainer(Map<String, String> envParams) {
         CreateContainerResponse container = client
-                .createContainerCmd(IMAGE_NAME)
-                .withEnv(envParams)
+                .createContainerCmd(imageName)
+                .withEnv(envParams.entrySet().stream().map(a -> a.getKey() + "=" + a.getValue()).collect(Collectors.toList()))
                 .withAttachStdin(true)
                 .exec();
         containerId = container.getId();
@@ -88,6 +92,24 @@ public class ContainerProfiling {
                 .getState()
                 .getStartedAt();
         return new MetricsUtil().parseTime(startedAt);
+    }
+
+    /**
+     * Returns the IP address of the container.
+     *
+     * @throws ProfilingException if the bridge network does not exist
+     */
+    public String getIpAddress() throws ProfilingException {
+        ContainerNetwork bridge = client.inspectContainerCmd(containerId)
+                .exec()
+                .getNetworkSettings()
+                .getNetworks()
+                .get("bridge");
+        if (bridge != null) {
+            return bridge.getIpAddress();
+        } else {
+            throw new ProfilingException("No bridge network found");
+        }
     }
 
     /**
@@ -124,11 +146,11 @@ public class ContainerProfiling {
 
     private String getLatestRunningContainerId() throws ProfilingException {
         for (Container c : this.client.listContainersCmd().exec()) {
-            if (IMAGE_NAME.equals(c.getImage()) && IS_RUNNING.equals(c.getState())) {
+            if (imageName.equals(c.getImage()) && IS_RUNNING.equals(c.getState())) {
                 return c.getId();
             }
         }
-        throw new ProfilingException("No running containers found. Container must be a running " + IMAGE_NAME + " image.");
+        throw new ProfilingException("No running containers found. Container must be a running " + imageName + " image.");
     }
 
     /**

@@ -24,7 +24,7 @@ public class RequestHandlerExecutor {
      */
     public void invokeHandleRequest(String param) throws ProfilingException {
         try {
-            handler.handleRequest(param, new ContextMock());
+            System.out.println(handler.handleRequest(param, new ContextMock()));
         } catch (RuntimeException e) {
             throw new ProfilingException("RuntimeException handleRequest", e);
         }

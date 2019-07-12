@@ -19,6 +19,7 @@ public class Main {
                 System.err.println(e.getCause().getMessage());
                 //logger.fatal(String.format("Caused By: %s", e.getCause().getMessage()));
             }
+            e.printStackTrace();
         }
     }
 

@@ -2,9 +2,7 @@ package de.uniba.dsg.serverless.functions.mixed;
 
 import com.google.common.util.concurrent.Uninterruptibles;
 
-import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
@@ -25,28 +23,27 @@ public class IOLoad implements Runnable {
     private final long size;
     private final long time;
 
-    private static final String MOCKY_URL = "http://www.mocky.io/v2/5d2361b32e0000e7a5c3f08f";
     private final WebTarget target;
 
     /**
+     * @param url  desired url
      * @param from start interval (number of requests per second)
      * @param to   end interval (number of requests per second)
      * @param size Size of the request/response payload
      * @param time total time
      */
-    public IOLoad(int from, int to, int size, long time) {
+    public IOLoad(String url, int from, int to, int size, long time) {
         this.from = Math.max(0, from);
         this.to = Math.max(0, to);
         this.size = size;
         this.time = time;
 
-        Client client = ClientBuilder.newClient();
-        target = client.target(MOCKY_URL);
+        target = ClientBuilder.newClient().target(url);
+        System.out.println(target.request().get().getStatus());
     }
 
     @Override
     public void run() {
-
         // TODO replace this with a more general approach, define load pattern first and then execute it.
         System.out.println("running io load");
         List<Integer> loadLog = new ArrayList<>();
@@ -56,12 +53,16 @@ public class IOLoad implements Runnable {
         long interval = 1_000;
 
         long nextInvocation = startTime;
+        System.out.println(startTime);
+        System.out.println(endTime);
+
         while (System.currentTimeMillis() < endTime) {
             float progress = (nextInvocation - startTime) / (1F * (endTime - startTime));
             int load = Math.round(from + (to - from) * progress);
+            System.out.println("executing " + load + " requests...");
             IntStream.range(0, load)
                     .parallel()
-                    .forEach(a -> invokeFunction(0, (int) size));
+                    .forEach(a -> System.out.println(invokeFunction(0, (int) size)));
 
             nextInvocation += interval;
             long toNextInvocation = nextInvocation - System.currentTimeMillis();
@@ -80,8 +81,8 @@ public class IOLoad implements Runnable {
 
     private String invokeFunction(int delay, int size) {
         return target
-                //.queryParam("delay", delay)
-                //.queryParam("size", size)
+                .queryParam("delay", delay)
+                .queryParam("size", size)
                 .request(MediaType.TEXT_PLAIN)
                 .get()
                 .toString();
