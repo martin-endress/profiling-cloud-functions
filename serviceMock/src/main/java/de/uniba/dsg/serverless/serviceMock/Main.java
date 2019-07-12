@@ -8,9 +8,12 @@ import java.net.URI;
 
 public class Main {
 
-    private static final String serverUri = "http://localhost:9000/";
-
     public static void main(String[] args) {
+        String port = System.getenv("MOCK_PORT");
+        if (port == null || port.isEmpty()) {
+            throw new RuntimeException("Environment parameters MOCK_IP and MOCK_PORT must be present.");
+        }
+        String serverUri = "http://localhost:" + port + "/";
         URI baseUri = UriBuilder.fromUri(serverUri).build();
         ResourceConfig config = new ResourceConfig(MockResource.class);
         JdkHttpServerFactory.createHttpServer(baseUri, config);

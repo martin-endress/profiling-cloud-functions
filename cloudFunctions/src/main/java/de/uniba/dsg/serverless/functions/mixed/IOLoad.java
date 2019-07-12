@@ -39,13 +39,11 @@ public class IOLoad implements Runnable {
         this.time = time;
 
         target = ClientBuilder.newClient().target(url);
-        System.out.println(target.request().get().getStatus());
     }
 
     @Override
     public void run() {
         // TODO replace this with a more general approach, define load pattern first and then execute it.
-        System.out.println("running io load");
         List<Integer> loadLog = new ArrayList<>();
         long startTime = System.currentTimeMillis();
         long endTime = startTime + time;
@@ -59,10 +57,9 @@ public class IOLoad implements Runnable {
         while (System.currentTimeMillis() < endTime) {
             float progress = (nextInvocation - startTime) / (1F * (endTime - startTime));
             int load = Math.round(from + (to - from) * progress);
-            System.out.println("executing " + load + " requests...");
             IntStream.range(0, load)
                     .parallel()
-                    .forEach(a -> System.out.println(invokeFunction(0, (int) size)));
+                    .forEach(a -> invokeFunction(0, (int) size));
 
             nextInvocation += interval;
             long toNextInvocation = nextInvocation - System.currentTimeMillis();

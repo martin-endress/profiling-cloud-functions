@@ -21,7 +21,6 @@ public class StatsRetriever {
     public static final String SERVICE_MOCK_DOCKERFILE = "serviceMock/Dockerfile";
     public static final String SERVICE_MOCK_IMAGE = "mendress/servicemock";
 
-
     public StatsRetriever() {
         startTime = System.currentTimeMillis();
     }
@@ -45,16 +44,16 @@ public class StatsRetriever {
         if (build) {
             // TODO parallel builds ?
             System.out.println("building container ..");
-            //String imageId = serviceMock.buildContainer();
-            //System.out.println(imageId);
-            String imageId = executor.buildContainer();
+            String imageId = serviceMock.buildContainer();
+            System.out.println(imageId);
+            imageId = executor.buildContainer();
             System.out.println(imageId);
         }
 
-        serviceMock.startContainer();
         Map<String, String> environment = new HashMap<>();
-        environment.put("MOCK_IP", serviceMock.getIpAddress());
         environment.put("MOCK_PORT","9000");
+        serviceMock.startContainer(environment);
+        environment.put("MOCK_IP", serviceMock.getIpAddress());
 
         String containerId = executor.startContainer(environment);
         containerStartTime = executor.getStartedAt();
