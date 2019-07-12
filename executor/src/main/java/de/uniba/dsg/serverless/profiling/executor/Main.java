@@ -6,12 +6,13 @@ public class Main {
     //System.setProperty("log4j.configurationFile", "log4j.properties");
     //private final static Logger logger = LogManager.getLogger("profiling");
 
+    public static final String CLOUD_FUNCTION_NAME = "de.uniba.dsg.serverless.functions.mixed.Mixed";
+
     public static void main(String[] args) {
+        System.out.println("handling request");
         try {
-            System.out.println("handling request");
-            runMixed();
-            //runFibonacci(args);
-            //runMocky();
+            RequestHandlerExecutor loader = new RequestHandlerExecutor(CLOUD_FUNCTION_NAME);
+            loader.invokeHandleRequest("");
         } catch (ProfilingException e) {
             //logger.fatal(e.getMessage());
             System.err.println(e.getMessage());
@@ -23,22 +24,5 @@ public class Main {
         }
     }
 
-    private static void runMixed() throws ProfilingException {
-        RequestHandlerExecutor loader = new RequestHandlerExecutor("de.uniba.dsg.serverless.functions.mixed.Mixed");
-        loader.invokeHandleRequest("");
-    }
 
-    private static void runFibonacci(String[] args) throws ProfilingException {
-        String n = "0";
-        if (args.length > 0) {
-            n = args[0];
-        }
-        RequestHandlerExecutor loader = new RequestHandlerExecutor("de.uniba.dsg.serverless.functions.fibonacci.Fibonacci");
-        loader.invokeHandleRequest(n);
-    }
-
-    private static void runMocky() throws ProfilingException {
-        RequestHandlerExecutor loader = new RequestHandlerExecutor("de.uniba.dsg.serverless.functions.mocky.Mocky");
-        loader.invokeHandleRequest("");
-    }
 }
