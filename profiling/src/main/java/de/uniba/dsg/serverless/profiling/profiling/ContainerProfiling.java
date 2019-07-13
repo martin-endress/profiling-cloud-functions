@@ -11,8 +11,6 @@ import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.InvocationBuilder.AsyncResultCallback;
 import com.github.dockerjava.core.command.BuildImageResultCallback;
-import com.google.common.collect.Sets;
-import de.uniba.dsg.serverless.profiling.StatsRetriever;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 import de.uniba.dsg.serverless.profiling.util.MetricsUtil;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -219,4 +217,11 @@ public class ContainerProfiling {
         tarInputStream.close();
     }
 
+    /**
+     * kills the Container
+     */
+    public void kill() {
+        client.killContainerCmd(containerId).exec();
+        client.removeContainerCmd(containerId).exec();
+    }
 }

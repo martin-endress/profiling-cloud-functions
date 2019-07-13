@@ -13,17 +13,12 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class StatsRetriever {
-    private final long startTime;
     private long containerStartTime = 0L;
 
     public static final String EXECUTOR_DOCKERFILE = "executor/Dockerfile";
     public static final String EXECUTOR_IMAGE = "mendress/executor";
     public static final String SERVICE_MOCK_DOCKERFILE = "serviceMock/Dockerfile";
     public static final String SERVICE_MOCK_IMAGE = "mendress/servicemock";
-
-    public StatsRetriever() {
-        startTime = System.currentTimeMillis();
-    }
 
     public static void main(String[] args) {
         try {
@@ -37,21 +32,20 @@ public class StatsRetriever {
         }
     }
 
-    public void retrieveStats() throws ProfilingException {
+    private void retrieveStats() throws ProfilingException {
         ContainerProfiling serviceMock = new ContainerProfiling(SERVICE_MOCK_DOCKERFILE, SERVICE_MOCK_IMAGE);
         ContainerProfiling executor = new ContainerProfiling(EXECUTOR_DOCKERFILE, EXECUTOR_IMAGE);
         boolean build = true;
         if (build) {
-            // TODO parallel builds ?
             System.out.println("building container ..");
-            String imageId = serviceMock.buildContainer();
+            String imageId = "";//serviceMock.buildContainer();
             System.out.println(imageId);
             imageId = executor.buildContainer();
             System.out.println(imageId);
         }
 
         Map<String, String> environment = new HashMap<>();
-        environment.put("MOCK_PORT","9000");
+        environment.put("MOCK_PORT", "9000");
         serviceMock.startContainer(environment);
         environment.put("MOCK_IP", serviceMock.getIpAddress());
 
@@ -59,12 +53,9 @@ public class StatsRetriever {
         containerStartTime = executor.getStartedAt();
         System.out.println("Container started. (id=" + containerId + "/ startedAt=" + containerStartTime + ")");
 
-        Profile p;
-        //p = getProfileUsingDockerApi(profiling);
-        //p = getProfileUsingControlGroups(profiling, containerId);
-        p = getProfileUsingBoth(executor, containerId);
+        Profile p = getProfileUsingBoth(executor, containerId);
 
-
+        serviceMock.kill();
         System.out.println(p.toString());
         p.save();
         System.out.println("Profile created");
@@ -77,6 +68,7 @@ public class StatsRetriever {
         while (statistics.isPresent()) {
             Metrics apiMetrics = new Metrics(statistics.get(), containerStartTime);
             Metrics cgMetrics = controlGroupProfiling.getMetric();
+            // delay between metrics is ~max 3 ms
             cgMetrics.addMetrics(apiMetrics);
             metrics.add(cgMetrics);
             statistics = profiling.getNextStatistics();

@@ -1,6 +1,8 @@
 package de.uniba.dsg.serverless.profiling.model;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import de.uniba.dsg.serverless.profiling.util.MetricsUtil;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -42,7 +44,9 @@ public class Profile {
 
     public void save() throws ProfilingException {
         List<String> lines = new ArrayList<>();
+        lines.add(toString());
         lines.add(getHeader());
+        lines.add(getEmptyMetrics());
         for (Metrics m : metrics) {
             lines.add(m.toString());
         }
@@ -56,13 +60,19 @@ public class Profile {
     }
 
     private String getHeader() {
-        return String.join(",", metrics.get(0).relevantMetrics);
+        List<String> headerEntries = new ArrayList<>();
+        headerEntries.add("timeStamp");
+        headerEntries.addAll(metrics.get(0).relevantMetrics);
+        return String.join(",", headerEntries);
+    }
+
+    private String getEmptyMetrics() {
+        return additional.getState().getStartedAt() + StringUtils.repeat(",0", metrics.get(0).relevantMetrics.size());
     }
 
     private String getUniqueFileName() {
-        String resource = metrics.get(0).getClass().getSimpleName();
         String started = this.started.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        return resource + " " + started;
+        return "Profile " + started + ".csv";
     }
 
     private void validateProfile(InspectContainerResponse additional) throws ProfilingException {

@@ -11,6 +11,7 @@ public class Metrics {
     private Map<String, Long> metrics;
     public List<String> relevantMetrics = new ArrayList<>();
     private MetricsUtil util = new MetricsUtil();
+    private String timeStamp;
 
     public Metrics(List<String> lines, long time) throws ProfilingException {
         relevantMetrics = new ArrayList<>(Arrays.asList("time", "user", "system"));
@@ -20,8 +21,13 @@ public class Metrics {
     }
 
     public Metrics(Statistics stats, long containerStartTime) throws ProfilingException {
+        timeStamp = stats.getRead();
         metrics = fromStatistics(stats, containerStartTime);
         validate();
+    }
+
+    public String getTimeStamp() {
+        return timeStamp;
     }
 
     /**
@@ -31,6 +37,7 @@ public class Metrics {
      * @throws ProfilingException when a duplicate is key is present.
      */
     public void addMetrics(Metrics metrics) throws ProfilingException {
+        timeStamp = (timeStamp != null) ? timeStamp : metrics.timeStamp;
         for (String metricsKey : metrics.relevantMetrics) {
             Long value = metrics.metrics.get(metricsKey);
             if (this.metrics.containsKey(metricsKey)) {
@@ -44,6 +51,7 @@ public class Metrics {
     @Override
     public String toString() {
         List<String> out = new ArrayList<>();
+        out.add(timeStamp);
         for (String s : relevantMetrics) {
             out.add(metrics.get(s).toString());
         }
