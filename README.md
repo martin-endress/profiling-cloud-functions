@@ -35,6 +35,8 @@ Start the stats retriever.
 From there, both the service mock image and profiling image is built. After that, they are executed and a new profile is created.  
 No parameters are needed. Currently (ugly), the IO/CPU load pattern is defined inside `cloudFunctions/../Mixed`.
 
+Check with `docker info` what resource limitations are enabled in the host kernel.
+
 ## cgroup information
 
 |   | property | description |

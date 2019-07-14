@@ -10,7 +10,6 @@ import java.util.stream.IntStream;
 public class Metrics {
     private Map<String, Long> metrics;
     public List<String> relevantMetrics = new ArrayList<>();
-    private MetricsUtil util = new MetricsUtil();
     private String timeStamp;
 
     public Metrics(List<String> lines, long time) throws ProfilingException {
@@ -24,6 +23,11 @@ public class Metrics {
         timeStamp = stats.getRead();
         metrics = fromStatistics(stats, containerStartTime);
         validate();
+    }
+
+    public Long getMetric(String metric) throws ProfilingException {
+        return Optional.ofNullable(metrics.get(metric))
+                .orElseThrow(() -> new ProfilingException("Metrics not available"));
     }
 
     public String getTimeStamp() {
@@ -101,7 +105,7 @@ public class Metrics {
         validateStats(stats);
         HashMap<String, Long> map = new HashMap<>();
 
-        long time = util.parseTime(stats.getRead());
+        long time = MetricsUtil.parseTime(stats.getRead());
         long relativeTime = time - containerStartTime;
         map.put("stats_time", relativeTime);
         relevantMetrics.add("stats_time");

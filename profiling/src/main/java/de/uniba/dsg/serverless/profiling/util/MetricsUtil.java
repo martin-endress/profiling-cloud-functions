@@ -22,7 +22,7 @@ public class MetricsUtil {
      * @return difference in milliseconds
      * @throws ProfilingException when from or to are not formatted as ISO_DATE_TIME
      */
-    public long timeDifference(String from, String to) throws ProfilingException {
+    public static long timeDifference(String from, String to) throws ProfilingException {
         try {
             LocalDateTime startTime = LocalDateTime.parse(from, DateTimeFormatter.ISO_DATE_TIME);
             LocalDateTime currentTime = LocalDateTime.parse(to, DateTimeFormatter.ISO_DATE_TIME);
@@ -39,7 +39,7 @@ public class MetricsUtil {
      * @return time as long
      * @throws ProfilingException when the time is not of ISO_DATE_TIME format
      */
-    public long parseTime(String time) throws ProfilingException {
+    public static long parseTime(String time) throws ProfilingException {
         try {
             return LocalDateTime.parse(time, DateTimeFormatter.ISO_DATE_TIME).toInstant(ZoneOffset.ofHours(0)).toEpochMilli();
         } catch (DateTimeParseException e) {
@@ -54,7 +54,7 @@ public class MetricsUtil {
      * @return the output of the command
      * @throws ProfilingException if the execution resulted in an error or the execution failed.
      */
-    public String executeCommand(String command) throws ProfilingException {
+    public static String executeCommand(String command) throws ProfilingException {
         try {
             Process process = Runtime.getRuntime().exec(new String[]{"/bin/bash", "-c", command});
             process.waitFor();

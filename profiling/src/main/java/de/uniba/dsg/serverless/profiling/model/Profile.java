@@ -21,8 +21,8 @@ public class Profile {
 
     public final int length;
     public final List<Metrics> metrics;
-
-    private final InspectContainerResponse additional;
+    public final InspectContainerResponse additional;
+    public final Metrics lastMetrics;
     public final LocalDateTime started;
     public final LocalDateTime finished;
 
@@ -34,6 +34,7 @@ public class Profile {
         this.length = metrics.size();
         this.metrics = metrics;
         this.additional = additional;
+        this.lastMetrics = metrics.get(length - 1);
 
         try {
             started = LocalDateTime.parse(additional.getState().getStartedAt(), DateTimeFormatter.ISO_DATE_TIME);
@@ -66,11 +67,11 @@ public class Profile {
         Files.write(folder.resolve("metrics.csv"), lines);
     }
 
-    private void saveAdditionalInformation(Path folder) throws IOException {
+    private void saveAdditionalInformation(Path folder) throws IOException, ProfilingException {
         Gson jsonParser = new GsonBuilder()
                 .setPrettyPrinting()
                 .create();
-        ProfileMetaInfo info = new ProfileMetaInfo(additional);
+        ProfileMetaInfo info = new ProfileMetaInfo(this);
         Files.writeString(folder.resolve("meta.json"), jsonParser.toJson(info));
     }
 
