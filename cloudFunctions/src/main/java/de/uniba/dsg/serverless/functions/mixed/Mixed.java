@@ -16,7 +16,7 @@ public class Mixed implements RequestHandler<String, String> {
 
     @Override
     public String handleRequest(String input, Context context) {
-        long loadTime = 60_000;
+        long loadTime = 100_000;
 
         String ip = System.getenv("MOCK_IP");
         String port = System.getenv("MOCK_PORT");
@@ -29,7 +29,7 @@ public class Mixed implements RequestHandler<String, String> {
         CPULoad cpuLoad = new CPULoad(0, 1, loadTime);
         IOLoad ioLoad = new IOLoad(url, 10, 20, 100_000, loadTime);
 
-        ExecutorService service = Executors.newFixedThreadPool(2);
+        ExecutorService service = Executors.newFixedThreadPool(8);
         //service.submit(ioLoad);
         service.submit(cpuLoad);
 

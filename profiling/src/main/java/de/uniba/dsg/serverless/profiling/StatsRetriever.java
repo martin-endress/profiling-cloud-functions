@@ -35,14 +35,9 @@ public class StatsRetriever {
     private void retrieveStats() throws ProfilingException {
         ContainerProfiling serviceMock = new ContainerProfiling(SERVICE_MOCK_DOCKERFILE, SERVICE_MOCK_IMAGE);
         ContainerProfiling executor = new ContainerProfiling(EXECUTOR_DOCKERFILE, EXECUTOR_IMAGE);
-        boolean build = true;
-        if (build) {
-            System.out.println("building container ..");
-            String imageId = "";//serviceMock.buildContainer();
-            System.out.println(imageId);
-            imageId = executor.buildContainer();
-            System.out.println(imageId);
-        }
+
+        //build(serviceMock);
+        //build(executor);
 
         Map<String, String> environment = new HashMap<>();
         environment.put("MOCK_PORT", "9000");
@@ -50,15 +45,24 @@ public class StatsRetriever {
         environment.put("MOCK_IP", serviceMock.getIpAddress());
 
         String containerId = executor.startContainer(environment);
-        containerStartTime = executor.getStartedAt();
+        //containerStartTime = executor.getStartedAt();
+        containerStartTime = System.currentTimeMillis();
         System.out.println("Container started. (id=" + containerId + "/ startedAt=" + containerStartTime + ")");
 
-        Profile p = getProfileUsingBoth(executor, containerId);
+        Profile p;
+        p = getProfileUsingBoth(executor, containerId);
+        //p = getProfileUsingControlGroups(executor, containerId);
 
         serviceMock.kill();
         System.out.println(p.toString());
         p.save();
         System.out.println("Profile created");
+    }
+
+    private void build(ContainerProfiling c) throws ProfilingException {
+        System.out.println("building container: " + c.imageName);
+        System.out.println("finished: " + c.buildContainer());
+
     }
 
     private Profile getProfileUsingBoth(ContainerProfiling profiling, String containerId) throws ProfilingException {
@@ -82,7 +86,7 @@ public class StatsRetriever {
         ControlGroupProfiling controlGroupProfiling = new ControlGroupProfiling(containerId, containerStartTime);
         while (controlGroupProfiling.metricsAvailable()) {
             metrics.add(controlGroupProfiling.getMetric());
-            Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
+            Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
         }
         InspectContainerResponse additional = profiling.inspectContainer();
         return new Profile(metrics, additional);

@@ -42,11 +42,11 @@ def getDeltaEntries(l, key):
     """ prepend option is optional -> first value is returned as is, so the length is the same """
     return numpy.diff(getEntries(l, key),prepend=0)
 
-csvFile = readCSVFile('../profiles/Profile 2019-07-13T14:22:36.554642212.csv')
+csvFile = readCSVFile('../plots/0to100-1cpu/Profile 2019-07-14T08:52:54.27390422.csv')
 
-time = getEntries(csvFile, "stats_time")
-bytesRecieved = getDeltaEntries(csvFile, "rx_bytes")
-bytesSent = getDeltaEntries(csvFile, "tx_bytes")
+time = getEntries(csvFile, "time")
+#bytesRecieved = getDeltaEntries(csvFile, "rx_bytes")
+#bytesSent = getDeltaEntries(csvFile, "tx_bytes")
 cgroupCpuUsage = getDeltaEntries(csvFile, "user")
 statsCpuUsage = getDeltaEntries(csvFile, "stats_total_cpu_usage")
 
@@ -55,7 +55,7 @@ fig, ax1 = pyplot.subplots()
 color = 'tab:red'
 ax1.set_xlabel('time (ms)')
 ax1.set_ylabel('cgroupCpuUsage', color=color)
-ax1.set_ylim([0,100])
+#ax1.set_ylim([0,800])
 ax1.plot(time, cgroupCpuUsage, color=color)
 ax1.tick_params(axis='y', labelcolor=color)
 
@@ -63,7 +63,7 @@ ax2 = ax1.twinx()
 
 color = 'tab:blue'
 ax2.set_ylabel('statsCpuUsage', color=color)
-ax2.set_ylim([0,1000000000])
+#ax2.set_ylim([0,8000000000])
 ax2.plot(time, statsCpuUsage, color=color)
 ax2.tick_params(axis='y', labelcolor=color)
 
