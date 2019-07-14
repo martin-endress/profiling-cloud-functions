@@ -7,6 +7,7 @@ import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ContainerNetwork;
+import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.InvocationBuilder.AsyncResultCallback;
@@ -31,8 +32,10 @@ public class ContainerProfiling {
     private String imageId;
     public final File dockerFile;
     public final String imageName;
-    private final String IS_RUNNING = "running";
     private final DockerClient client;
+
+    public static final long DEFAULT_CPU_PERIOD = 100000;
+    public static final long CPU_QUOTA_CONST = 100000;
 
     public ContainerProfiling(String dockerFile, String imageName) throws ProfilingException {
         this.imageName = imageName;
@@ -77,6 +80,7 @@ public class ContainerProfiling {
         CreateContainerResponse container = client
                 .createContainerCmd(imageName)
                 .withEnv(envParams.entrySet().stream().map(a -> a.getKey() + "=" + a.getValue()).collect(Collectors.toList()))
+                .withHostConfig(getHostConfig(0.5))
                 .withAttachStdin(true)
                 .exec();
         containerId = container.getId();
@@ -84,12 +88,24 @@ public class ContainerProfiling {
         return containerId;
     }
 
+    /**
+     * Returns the host config based on the provided settings
+     *
+     * @param cpus
+     * @return
+     * @see <a href="https://github.com/docker-java/docker-java/issues/1008">https://github.com/docker-java/docker-java/issues/1008</a>
+     */
+    private HostConfig getHostConfig(double cpus) {
+        long cpuQuota = (long) (cpus * CPU_QUOTA_CONST);
+        return new HostConfig().withCpuQuota(cpuQuota).withCpuPeriod(DEFAULT_CPU_PERIOD);
+    }
+
     public long getStartedAt() throws ProfilingException {
         String startedAt = client.inspectContainerCmd(containerId)
                 .exec()
                 .getState()
                 .getStartedAt();
-        return new MetricsUtil().parseTime(startedAt);
+        return MetricsUtil.parseTime(startedAt);
     }
 
     /**
@@ -140,15 +156,6 @@ public class ContainerProfiling {
         } catch (NotFoundException e) {
             throw new ProfilingException(e);
         }
-    }
-
-    private String getLatestRunningContainerId() throws ProfilingException {
-        for (Container c : this.client.listContainersCmd().exec()) {
-            if (imageName.equals(c.getImage()) && IS_RUNNING.equals(c.getState())) {
-                return c.getId();
-            }
-        }
-        throw new ProfilingException("No running containers found. Container must be a running " + imageName + " image.");
     }
 
     /**
