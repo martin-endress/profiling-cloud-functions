@@ -2,6 +2,7 @@ package de.uniba.dsg.serverless.profiling;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Statistics;
+import com.github.dockerjava.api.model.Volume;
 import com.google.common.util.concurrent.Uninterruptibles;
 import de.uniba.dsg.serverless.profiling.model.Metrics;
 import de.uniba.dsg.serverless.profiling.model.Profile;
@@ -19,6 +20,7 @@ public class StatsRetriever {
     public static final String EXECUTOR_IMAGE = "mendress/executor";
     public static final String SERVICE_MOCK_DOCKERFILE = "serviceMock/Dockerfile";
     public static final String SERVICE_MOCK_IMAGE = "mendress/servicemock";
+    public static final String PYTHON_PLOTTER_IMAGE = "mendress/pythonplotter";
 
     public static void main(String[] args) {
         try {
@@ -37,7 +39,7 @@ public class StatsRetriever {
         ContainerProfiling executor = new ContainerProfiling(EXECUTOR_DOCKERFILE, EXECUTOR_IMAGE);
 
         //build(serviceMock);
-        //build(executor);
+        build(executor);
 
         Map<String, String> environment = new HashMap<>();
         environment.put("MOCK_PORT", "9000");
@@ -56,6 +58,11 @@ public class StatsRetriever {
         serviceMock.kill();
         p.save(null); // TODO
         System.out.println("Profile created");
+    }
+
+
+    private void plotProfile() throws ProfilingException {
+        ContainerProfiling plotter = new ContainerProfiling("", PYTHON_PLOTTER_IMAGE);
     }
 
     private void build(ContainerProfiling c) throws ProfilingException {

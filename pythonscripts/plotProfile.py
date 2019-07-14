@@ -1,6 +1,8 @@
 import csv
 import matplotlib.pyplot as pyplot
 import numpy
+from os import listdir
+from os.path import isfile, join
 
 '''
 This python script plots profiles created by the stats retriever.
@@ -40,32 +42,36 @@ def getEntries(l, key):
 
 def getDeltaEntries(l, key):
     """ prepend option is optional -> first value is returned as is, so the length is the same """
-    return numpy.diff(getEntries(l, key),prepend=0)
+    return numpy.diff(getEntries(l, key), prepend=0)
 
-csvFile = readCSVFile('../plots/0to100-1cpu/Profile 2019-07-14T08:52:54.27390422.csv')
 
-time = getEntries(csvFile, "time")
-#bytesRecieved = getDeltaEntries(csvFile, "rx_bytes")
-#bytesSent = getDeltaEntries(csvFile, "tx_bytes")
-cgroupCpuUsage = getDeltaEntries(csvFile, "user")
-statsCpuUsage = getDeltaEntries(csvFile, "stats_total_cpu_usage")
+def plotFile(file):
+    time = getEntries(file, "time")
+    #bytesRecieved = getDeltaEntries(file, "rx_bytes")
+    #bytesSent = getDeltaEntries(file, "tx_bytes")
+    cgroupCpuUsage = getDeltaEntries(file, "user")
+    statsCpuUsage = getDeltaEntries(file, "stats_total_cpu_usage")
 
-fig, ax1 = pyplot.subplots()
+    fig, ax1 = pyplot.subplots()
 
-color = 'tab:red'
-ax1.set_xlabel('time (ms)')
-ax1.set_ylabel('cgroupCpuUsage', color=color)
-#ax1.set_ylim([0,800])
-ax1.plot(time, cgroupCpuUsage, color=color)
-ax1.tick_params(axis='y', labelcolor=color)
+    color = 'tab:red'
+    ax1.set_xlabel('time (ms)')
+    ax1.set_ylabel('cgroupCpuUsage', color=color)
+    # ax1.set_ylim([0,800])
+    ax1.plot(time, cgroupCpuUsage, color=color)
+    ax1.tick_params(axis='y', labelcolor=color)
 
-ax2 = ax1.twinx()
+    ax2 = ax1.twinx()
 
-color = 'tab:blue'
-ax2.set_ylabel('statsCpuUsage', color=color)
-#ax2.set_ylim([0,8000000000])
-ax2.plot(time, statsCpuUsage, color=color)
-ax2.tick_params(axis='y', labelcolor=color)
+    color = 'tab:blue'
+    ax2.set_ylabel('statsCpuUsage', color=color)
+    # ax2.set_ylim([0,8000000000])
+    ax2.plot(time, statsCpuUsage, color=color)
+    ax2.tick_params(axis='y', labelcolor=color)
 
-fig.tight_layout()
-pyplot.show()
+    fig.tight_layout()
+    fig.savefig('artifacts/output.pdf')
+    #pyplot.show()
+
+csvFile = readCSVFile('artifacts/metrics.csv')
+plotFile(csvFile)

@@ -5,10 +5,7 @@ import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.ContainerNetwork;
-import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.Statistics;
+import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.InvocationBuilder.AsyncResultCallback;
 import com.github.dockerjava.core.command.BuildImageResultCallback;
@@ -69,18 +66,19 @@ public class ContainerProfiling {
     }
 
     public String startContainer() {
-        return startContainer(new HashMap<>());
+        return startContainer(new HashMap<>(),null);
     }
 
     /**
      * @param envParams
      * @return
      */
-    public String startContainer(Map<String, String> envParams) {
+    public String startContainer(Map<String, String> envParams, Volume volume) {
         CreateContainerResponse container = client
                 .createContainerCmd(imageName)
                 .withEnv(envParams.entrySet().stream().map(a -> a.getKey() + "=" + a.getValue()).collect(Collectors.toList()))
                 .withHostConfig(getHostConfig(0.5))
+                .withVolumes(volume)
                 .withAttachStdin(true)
                 .exec();
         containerId = container.getId();

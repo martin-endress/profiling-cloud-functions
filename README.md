@@ -1,10 +1,5 @@
 # BachelorArbeit von Martin Endreß
 
-## TODOs
-
-ressourcen einschränken, RAM und CPU dazu skalieren
-vergleich cgroups vs docker api detailliert..
-
 ## Overview
 
 ```bash
@@ -52,3 +47,13 @@ Check with `docker info` what resource limitations are enabled in the host kerne
 |   | system | time kernel is executing system calls (again 100/s) |
 |   |  |  |
 |I/O| blkio.sectors |  |
+
+
+## TODOs
+
+ressourcen einschränken, RAM und CPU dazu skalieren
+vergleich cgroups vs docker api detailliert..
+
+## Open Issues
+
+get total usage of a container execution. currently, the last recorded metric is used.
