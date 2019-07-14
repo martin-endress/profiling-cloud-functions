@@ -54,8 +54,7 @@ public class StatsRetriever {
         //p = getProfileUsingControlGroups(executor, containerId);
 
         serviceMock.kill();
-        System.out.println(p.toString());
-        p.save();
+        p.save(null); // TODO
         System.out.println("Profile created");
     }
 
