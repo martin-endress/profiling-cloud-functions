@@ -66,19 +66,19 @@ public class ContainerProfiling {
     }
 
     public String startContainer() {
-        return startContainer(new HashMap<>(),null);
+        return startContainer(new HashMap<>());
     }
 
     /**
      * @param envParams
      * @return
      */
-    public String startContainer(Map<String, String> envParams, Volume volume) {
+    public String startContainer(Map<String, String> envParams) {
         CreateContainerResponse container = client
                 .createContainerCmd(imageName)
                 .withEnv(envParams.entrySet().stream().map(a -> a.getKey() + "=" + a.getValue()).collect(Collectors.toList()))
                 .withHostConfig(getHostConfig(0.5))
-                .withVolumes(volume)
+                //.withVolumes(volume)
                 .withAttachStdin(true)
                 .exec();
         containerId = container.getId();
