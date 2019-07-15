@@ -63,20 +63,30 @@ def plotFile(file, folder):
 
     fig, ax1 = pyplot.subplots()
 
-    color = 'tab:red'
-    ax1.set_xlabel('time (ms)')
-    ax1.set_ylabel('memoryUsage', color=color)
-    ax1.set_ylim([0, 600E6])
-    ax1.plot(time, memoryUsage, color=color)
+
+    color = 'tab:blue'
+    ax1.set_ylabel('statsCpuUsage', color=color)
+    ax1.set_ylim([0, 15E8])
+    ax1.plot(time, statsCpuUsage, color=color)
     ax1.tick_params(axis='y', labelcolor=color)
 
     ax2 = ax1.twinx()
-
-    color = 'tab:blue'
-    ax2.set_ylabel('statsCpuUsage', color=color)
-    ax2.set_ylim([0, 13E8])
-    ax2.plot(time, statsCpuUsage, color=color)
+    color = 'tab:red'
+    ax2.set_xlabel('time (ms)')
+    ax2.set_ylabel('memoryUsage', color=color)
+    ax2.set_ylim([0, 900E6])
+    ax2.plot(time, memoryUsage, color=color)
     ax2.tick_params(axis='y', labelcolor=color)
+
+    ax3 = ax1.twinx()
+    ax3.spines["right"].set_position(("axes", 1.2))
+    color = 'tab:orange'
+    ax3.set_ylabel('bytesRecieved', color=color)
+    ax3.set_ylim([0, 900000])
+    ax3.plot(time, bytesRecieved, color=color)
+    ax3.tick_params(axis='y', labelcolor=color)
+    
+    fig.plot(time, getOptimal(time,30))
 
     fig.tight_layout()
     fig.savefig(folder+'/output.pdf')
