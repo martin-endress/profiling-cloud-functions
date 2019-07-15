@@ -26,13 +26,20 @@ public class IOLoad implements Runnable {
     private final WebTarget target;
 
     /**
-     * @param url  desired url
      * @param from start interval (number of requests per second)
      * @param to   end interval (number of requests per second)
      * @param size Size of the request/response payload
      * @param time total time
+     * @throws RuntimeException if respective env parameters are not set
      */
-    public IOLoad(String url, int from, int to, int size, long time) {
+    public IOLoad(int from, int to, int size, long time) {
+        String ip = System.getenv("MOCK_IP");
+        String port = System.getenv("MOCK_PORT");
+        if (ip == null || ip.isEmpty() || port == null || port.isEmpty()) {
+            throw new RuntimeException("Environment parameters MOCK_IP and MOCK_PORT must be present.");
+        }
+        String url = "http://" + ip + ":" + port + "/api/getResponse/";
+
         this.from = Math.max(0, from);
         this.to = Math.max(0, to);
         this.size = size;

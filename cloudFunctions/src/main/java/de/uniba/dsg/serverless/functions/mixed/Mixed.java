@@ -16,22 +16,17 @@ public class Mixed implements RequestHandler<String, String> {
 
     @Override
     public String handleRequest(String input, Context context) {
-        long loadTime = 100_000;
-
-        String ip = System.getenv("MOCK_IP");
-        String port = System.getenv("MOCK_PORT");
-        if (ip == null || ip.isEmpty() || port == null || port.isEmpty()) {
-            throw new RuntimeException("Environment parameters MOCK_IP and MOCK_PORT must be present.");
-        }
-
-        String url = "http://" + ip + ":" + port + "/api/getResponse/";
+        long loadTime = 30_000;
+        long megaByte = 1_048_576L;
 
         CPULoad cpuLoad = new CPULoad(0, 1, loadTime);
-        IOLoad ioLoad = new IOLoad(url, 10, 20, 100_000, loadTime);
+        IOLoad ioLoad = new IOLoad(0, 60, 10_000, loadTime);
+        MemoryLoad memLoad = new MemoryLoad(512 * megaByte, loadTime);
 
-        ExecutorService service = Executors.newFixedThreadPool(8);
+        ExecutorService service = Executors.newFixedThreadPool(1);
         //service.submit(ioLoad);
-        service.submit(cpuLoad);
+        //service.submit(cpuLoad);
+        service.submit(memLoad);
 
 
         Uninterruptibles.sleepUninterruptibly(loadTime, TimeUnit.MILLISECONDS);

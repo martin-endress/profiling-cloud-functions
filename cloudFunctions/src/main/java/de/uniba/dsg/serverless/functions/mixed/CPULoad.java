@@ -1,5 +1,9 @@
 package de.uniba.dsg.serverless.functions.mixed;
 
+import com.google.common.util.concurrent.Uninterruptibles;
+
+import java.util.concurrent.TimeUnit;
+
 public class CPULoad implements Runnable {
 
     private final double from;
@@ -27,16 +31,12 @@ public class CPULoad implements Runnable {
         long startTime = System.currentTimeMillis();
         long endTime = startTime + time;
 
-        try {
-            while (System.currentTimeMillis() < endTime) {
-                if (System.currentTimeMillis() % 100 == 0) {
-                    double progress = (System.currentTimeMillis() - startTime) / (1. * (endTime - startTime));
-                    double load = from + (to - from) * progress;
-                    Thread.sleep((long) Math.floor((1 - load) * 100));
-                }
+        while (System.currentTimeMillis() < endTime) {
+            if (System.currentTimeMillis() % 100 == 0) {
+                double progress = (System.currentTimeMillis() - startTime) / (1. * (endTime - startTime));
+                double load = from + (to - from) * progress;
+                Uninterruptibles.sleepUninterruptibly((long) Math.floor((1 - load) * 100), TimeUnit.MILLISECONDS);
             }
-        } catch (InterruptedException e) {
-            System.err.println("CPULoad interrupted, terminating...");
         }
     }
 }
