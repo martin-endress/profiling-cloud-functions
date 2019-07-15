@@ -12,6 +12,20 @@ public class Metrics {
     public List<String> relevantMetrics = new ArrayList<>();
     private String timeStamp;
 
+    public static final String STATS_TIME = "stats_time";
+    public static final String STATS_TOTAL_CPU_USAGE = "stats_total_cpu_usage";
+    public static final String MEMORY_LIMIT = "memory_limit";
+    public static final String MEMORY_CACHE = "memory_cache";
+    public static final String MEMORY_USAGE = "memory_usage";
+    public static final String RX_BYTES = "rx_bytes";
+    public static final String RX_DROPPED = "rx_dropped";
+    public static final String RX_ERRORS = "rx_errors";
+    public static final String RX_PACKETS = "rx_packets";
+    public static final String TX_BYTES = "tx_bytes";
+    public static final String TX_DROPPED = "tx_dropped";
+    public static final String TX_ERRORS = "tx_errors";
+    public static final String TX_PACKETS = "tx_packets";
+
     public Metrics(List<String> lines, long time) throws ProfilingException {
         relevantMetrics = new ArrayList<>(Arrays.asList("time", "user", "system"));
         metrics = fromLines(lines);
@@ -27,7 +41,16 @@ public class Metrics {
 
     public Long getMetric(String metric) throws ProfilingException {
         return Optional.ofNullable(metrics.get(metric))
-                .orElseThrow(() -> new ProfilingException("Metrics not available"));
+                .orElseThrow(() -> new ProfilingException("Metrics not available: " + metric));
+    }
+
+    public Long getOrDefault(String metric, long defaultValue) {
+        return Optional.ofNullable(metrics.get(metric)).orElse(defaultValue);
+    }
+
+
+    public boolean containsMetric(String key) {
+        return metrics.containsKey(key);
     }
 
     public String getTimeStamp() {
@@ -107,12 +130,12 @@ public class Metrics {
 
         long time = MetricsUtil.parseTime(stats.getRead());
         long relativeTime = time - containerStartTime;
-        map.put("stats_time", relativeTime);
-        relevantMetrics.add("stats_time");
+        map.put(STATS_TIME, relativeTime);
+        relevantMetrics.add(STATS_TIME);
 
         long totalCpu = Optional.ofNullable(stats.getCpuStats().getCpuUsage().getTotalUsage()).orElse(-1L);
-        map.put("stats_total_cpu_usage", totalCpu);
-        relevantMetrics.add("stats_total_cpu_usage");
+        map.put(STATS_TOTAL_CPU_USAGE, totalCpu);
+        relevantMetrics.add(STATS_TOTAL_CPU_USAGE);
 
         // per CPU stats
         List<Long> usagePerCpu = Optional.ofNullable(stats.getCpuStats().getCpuUsage().getPercpuUsage()).orElse(new ArrayList<>());
@@ -121,31 +144,39 @@ public class Metrics {
             relevantMetrics.add("cpu_" + i);
         });
 
+        map.put(MEMORY_USAGE, stats.getMemoryStats().getUsage());
+        relevantMetrics.add(MEMORY_USAGE);
+        map.put(MEMORY_CACHE, stats.getMemoryStats().getStats().getCache());
+        relevantMetrics.add(MEMORY_CACHE);
+
+        map.put(MEMORY_LIMIT, stats.getMemoryStats().getLimit());
+        relevantMetrics.add(MEMORY_LIMIT);
+
         Map<String, StatisticNetworksConfig> networkMap = Optional.ofNullable(stats.getNetworks()).orElse(new HashMap<>());
-        if (networkMap.isEmpty()) {
-            throw new ProfilingException("Networkmap is empty. ");
+        if (networkMap.size() != 1) {
+            throw new ProfilingException("Networkmap must be of size 1. ");
         }
-        for (Map.Entry<String, StatisticNetworksConfig> c : networkMap.entrySet()) {
-            // prepend network name if there is more than one network
-            String networkName = networkMap.size() != 1 ? c.getKey() : "";
-            map.put(networkName + "rx_bytes", c.getValue().getRxBytes());
-            map.put(networkName + "rx_dropped", c.getValue().getRxDropped());
-            map.put(networkName + "rx_errors", c.getValue().getRxErrors());
-            map.put(networkName + "rx_packets", c.getValue().getRxPackets());
-            map.put(networkName + "tx_bytes", c.getValue().getTxBytes());
-            map.put(networkName + "tx_dropped", c.getValue().getTxDropped());
-            map.put(networkName + "tx_errors", c.getValue().getTxErrors());
-            map.put(networkName + "tx_packets", c.getValue().getTxPackets());
+
+        for (String key : networkMap.keySet()) {
+            StatisticNetworksConfig network = networkMap.get(key);
+            map.put(RX_BYTES, network.getRxBytes());
+            map.put(RX_DROPPED, network.getRxDropped());
+            map.put(RX_ERRORS, network.getRxErrors());
+            map.put(RX_PACKETS, network.getRxPackets());
+            map.put(TX_BYTES, network.getTxBytes());
+            map.put(TX_DROPPED, network.getTxDropped());
+            map.put(TX_ERRORS, network.getTxErrors());
+            map.put(TX_PACKETS, network.getTxPackets());
 
             relevantMetrics.addAll(Arrays.asList(
-                    networkName + "rx_bytes",
-                    networkName + "rx_dropped",
-                    networkName + "rx_errors",
-                    networkName + "rx_packets",
-                    networkName + "tx_bytes",
-                    networkName + "tx_dropped",
-                    networkName + "tx_errors",
-                    networkName + "tx_packets"));
+                    RX_BYTES,
+                    RX_DROPPED,
+                    RX_ERRORS,
+                    RX_PACKETS,
+                    TX_BYTES,
+                    TX_DROPPED,
+                    TX_ERRORS,
+                    TX_PACKETS));
         }
 
         return map;
@@ -159,5 +190,4 @@ public class Metrics {
             throw new ProfilingException("Stats must not be null");
         }
     }
-
 }

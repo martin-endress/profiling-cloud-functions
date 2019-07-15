@@ -2,11 +2,11 @@ package de.uniba.dsg.serverless.profiling;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Statistics;
-import com.github.dockerjava.api.model.Volume;
 import com.google.common.util.concurrent.Uninterruptibles;
 import de.uniba.dsg.serverless.profiling.model.Metrics;
 import de.uniba.dsg.serverless.profiling.model.Profile;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
+import de.uniba.dsg.serverless.profiling.model.ResourceLimits;
 import de.uniba.dsg.serverless.profiling.profiling.ContainerProfiling;
 import de.uniba.dsg.serverless.profiling.profiling.ControlGroupProfiling;
 
@@ -46,8 +46,9 @@ public class StatsRetriever {
         serviceMock.startContainer(environment);
         environment.put("MOCK_IP", serviceMock.getIpAddress());
 
-        String containerId = executor.startContainer(environment);
-        //containerStartTime = executor.getStartedAt();
+        ResourceLimits limits = ResourceLimits.fromFile("limits.json");
+
+        String containerId = executor.startContainer(environment, limits);
         containerStartTime = System.currentTimeMillis();
         System.out.println("Container started. (id=" + containerId + "/ startedAt=" + containerStartTime + ")");
 

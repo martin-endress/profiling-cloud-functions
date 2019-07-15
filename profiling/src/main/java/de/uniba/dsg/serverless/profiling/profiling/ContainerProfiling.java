@@ -10,6 +10,7 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.InvocationBuilder.AsyncResultCallback;
 import com.github.dockerjava.core.command.BuildImageResultCallback;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
+import de.uniba.dsg.serverless.profiling.model.ResourceLimits;
 import de.uniba.dsg.serverless.profiling.util.MetricsUtil;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -65,8 +66,16 @@ public class ContainerProfiling {
         }
     }
 
+    /**
+     * @return
+     */
     public String startContainer() {
-        return startContainer(new HashMap<>());
+        return startContainer(Collections.emptyMap(), ResourceLimits.unlimited());
+    }
+
+
+    public String startContainer(ResourceLimits limits) {
+        return startContainer(Collections.emptyMap(), limits);
     }
 
     /**
@@ -74,10 +83,14 @@ public class ContainerProfiling {
      * @return
      */
     public String startContainer(Map<String, String> envParams) {
+        return startContainer(envParams, ResourceLimits.unlimited());
+    }
+
+    public String startContainer(Map<String, String> envParams, ResourceLimits limits) {
         CreateContainerResponse container = client
                 .createContainerCmd(imageName)
                 .withEnv(envParams.entrySet().stream().map(a -> a.getKey() + "=" + a.getValue()).collect(Collectors.toList()))
-                .withHostConfig(getHostConfig(0.5))
+                .withHostConfig(getHostConfig(limits))
                 //.withVolumes(volume)
                 .withAttachStdin(true)
                 .exec();
@@ -89,13 +102,22 @@ public class ContainerProfiling {
     /**
      * Returns the host config based on the provided settings
      *
-     * @param cpus
-     * @return
+     * @param limits resource limits
+     * @return host config based on limits
      * @see <a href="https://github.com/docker-java/docker-java/issues/1008">https://github.com/docker-java/docker-java/issues/1008</a>
      */
-    private HostConfig getHostConfig(double cpus) {
-        long cpuQuota = (long) (cpus * CPU_QUOTA_CONST);
-        return new HostConfig().withCpuQuota(cpuQuota).withCpuPeriod(DEFAULT_CPU_PERIOD);
+    private HostConfig getHostConfig(ResourceLimits limits) {
+        HostConfig config = new HostConfig();
+
+        if (limits.cpuLimit > 0.0) {
+            long cpuQuota = (long) (limits.cpuLimit * CPU_QUOTA_CONST);
+            config.withCpuQuota(cpuQuota).withCpuPeriod(DEFAULT_CPU_PERIOD);
+        }
+        if (limits.memoryLimit > 0L) {
+            config.withMemory(limits.memoryLimit);
+        }
+        return config;
+
     }
 
     public long getStartedAt() throws ProfilingException {
