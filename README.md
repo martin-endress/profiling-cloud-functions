@@ -2,7 +2,7 @@
 
 ## Overview
 
-```bash
+```
 ├── cloudFunctions       | set of test cloud functions
 │   ├── build            | built cloud functions 
 │   ├── build.gradle     | 
@@ -11,12 +11,16 @@
 │   ├── build.gradle     | 
 │   ├── Dockerfile       | definition of the docker container
 │   └── src              | 
+├── plots                | examplary plots (will be replaced by automatically generated ones)
 ├── profiles             | result profiles and container logs
 │   ├── Profile 1        |
 │   └── Profile 2        | 
 ├── profiling            | retrieves docker statistics and cgroup information from running containers
 │   ├── build.gradle     | 
 │   └── src              | 
+├── pythonscripts        | python scripts for plotting
+│   ├── Dockerfile       | automatically generate plots (work in progress)
+│   └── plotProfile.py   | plot all available `metrics.csv` files in profiles
 ├── README.md            | this file
 ├── serviceMock          | service which generates response of certain size after a delay /api/getResponse?size=[size]&delay=[delay]
 │   ├── Dockerfile       | definition of the docker container
