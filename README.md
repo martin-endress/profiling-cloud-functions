@@ -36,6 +36,8 @@ No parameters are needed. Currently (ugly), the IO/CPU load pattern is defined i
 
 Check with `docker info` what resource limitations are enabled in the host kernel.
 
+Run `gradle profiling:run` in the project root. (IntelliJ run may not work)
+
 ## cgroup information
 
 |   | property | description |
