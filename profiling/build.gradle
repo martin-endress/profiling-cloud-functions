@@ -61,6 +61,12 @@ dependencies {
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
 }
 
+task run(type: JavaExec, overwrite: true) {
+    workingDir '../'
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'package.Main'
+}
+
 jar {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     manifest {
