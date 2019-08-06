@@ -44,8 +44,8 @@ public class Profile {
         }
     }
 
-    public Path save(Path folder1) throws ProfilingException {
-        Path folder = getUniqueFolderName();
+    public Path save(Path folder) throws ProfilingException {
+        folder = getFullPath(folder);
         try {
             Files.createDirectories(folder);
             saveCSV(folder);
@@ -86,10 +86,9 @@ public class Profile {
         return additional.getState().getStartedAt() + StringUtils.repeat(",0", metrics.get(0).relevantMetrics.size());
     }
 
-    private Path getUniqueFolderName() {
-        // TODO replace by general name
-        String started = this.started.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        return OUTPUT_FOLDER.resolve("Profile " + started);
+    private Path getFullPath(Path execution) {
+        String started = this.started.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME).replaceAll(":", "_");
+        return OUTPUT_FOLDER.resolve(execution).resolve("Profile_" + started);
     }
 
     private void validateProfile(InspectContainerResponse additional) throws ProfilingException {

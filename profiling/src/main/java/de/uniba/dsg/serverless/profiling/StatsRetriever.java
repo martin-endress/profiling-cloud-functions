@@ -10,6 +10,8 @@ import de.uniba.dsg.serverless.profiling.model.ResourceLimits;
 import de.uniba.dsg.serverless.profiling.profiling.ContainerProfiling;
 import de.uniba.dsg.serverless.profiling.profiling.ControlGroupProfiling;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -39,26 +41,40 @@ public class StatsRetriever {
         ContainerProfiling executor = new ContainerProfiling(EXECUTOR_DOCKERFILE, EXECUTOR_IMAGE);
 
         //build(serviceMock);
-        build(executor);
+        //build(executor);
 
-        Map<String, String> environment = new HashMap<>();
+        Map<String, String> environment = getParameters();
         environment.put("MOCK_PORT", "9000");
         serviceMock.startContainer(environment);
         environment.put("MOCK_IP", serviceMock.getIpAddress());
 
         ResourceLimits limits = ResourceLimits.fromFile("limits.json");
 
-        String containerId = executor.startContainer(environment, limits);
-        containerStartTime = System.currentTimeMillis();
-        System.out.println("Container started. (id=" + containerId + "/ startedAt=" + containerStartTime + ")");
 
-        Profile p;
-        p = getProfileUsingBoth(executor, containerId);
-        //p = getProfileUsingControlGroups(executor, containerId);
+        List<Profile> profiles = new ArrayList<>();
+        for(int i=0;i<150;i++){
+            String containerId = executor.startContainer(environment, limits);
+            containerStartTime = System.currentTimeMillis();
+            System.out.println("Container started. (id=" + containerId + "/ startedAt=" + containerStartTime + ")");
+            Profile p = getProfileUsingBoth(executor, containerId);
+            profiles.add(p);
+            p.save(Paths.get("run3"));
+        }
 
         serviceMock.kill();
-        p.save(null); // TODO
         System.out.println("Profile created");
+    }
+
+    private Map<String, String> getParameters() {
+        Map<String, String> map = new HashMap<>();
+        map.put("LOAD_TIME", "3000");
+        map.put("CPU_FROM", "0.2");
+        map.put("CPU_TO", "0.4");
+        map.put("MEMORY_TO", "5000");
+        map.put("IO_FROM", "1");
+        map.put("IO_TO", "2");
+        map.put("IO_SIZE", "5000");
+        return map;
     }
 
 

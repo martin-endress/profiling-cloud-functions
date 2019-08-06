@@ -63,7 +63,6 @@ def plotFile(file, folder):
 
     fig, ax1 = pyplot.subplots()
 
-
     color = 'tab:blue'
     ax1.set_ylabel('statsCpuUsage', color=color)
     ax1.set_ylim([0, 15E8])
@@ -82,11 +81,9 @@ def plotFile(file, folder):
     ax3.spines["right"].set_position(("axes", 1.2))
     color = 'tab:orange'
     ax3.set_ylabel('bytesRecieved', color=color)
-    ax3.set_ylim([0, 900000])
+    #ax3.set_ylim([0, 900000])
     ax3.plot(time, bytesRecieved, color=color)
     ax3.tick_params(axis='y', labelcolor=color)
-    
-    fig.plot(time, getOptimal(time,30))
 
     fig.tight_layout()
     fig.savefig(folder+'/output.pdf')
