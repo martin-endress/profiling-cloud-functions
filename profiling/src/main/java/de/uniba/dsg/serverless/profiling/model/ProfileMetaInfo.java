@@ -12,9 +12,12 @@ public class ProfileMetaInfo {
     public final String imageId;
     public final InspectContainerResponse.ContainerState state;
     public final long durationMS;
-    public final double cpuUtilisation;
-    public final double memoryLimit;
-    public final double averageMemoryUtilization;
+    public double cpuUtilisation; // relative to the quota
+    public double maxCpuUtilisation; // maximum cpu utilization // TODO maybe change this to relative to quota also
+    public long maxMemoryUtilization;
+    public double memoryLimit;
+    public double averageMemoryUtilization;
+    public double kFlops;
 
     /**
      * Creates Profile Meta data which are parsed to json
@@ -29,15 +32,13 @@ public class ProfileMetaInfo {
         imageId = additional.getImageId();
         state = additional.getState();
         durationMS = MetricsUtil.timeDifference(state.getStartedAt(), state.getFinishedAt());
+        kFlops = profile.kFlops;
         if (profile.lastMetrics.containsMetric(Metrics.STATS_TOTAL_CPU_USAGE)) {
             cpuUtilisation = calculateCpuUtilization(profile);
+            maxCpuUtilisation = calculateMaxCpuUtilisation(profile);
             memoryLimit = profile.lastMetrics.getMetric(Metrics.MEMORY_LIMIT);
+            maxMemoryUtilization = getMaxMemoryUtilization(profile);
             averageMemoryUtilization = getAverageMemoryUtilization(profile);
-        } else {
-            // no stats present
-            cpuUtilisation = 0;
-            memoryLimit = 0;
-            averageMemoryUtilization = 0;
         }
     }
 
@@ -49,8 +50,25 @@ public class ProfileMetaInfo {
         return statsTotalCpuMS / availableTime;
     }
 
+    /**
+     * Divide current cpu usage by current time
+     *
+     * @param profile profile
+     * @return max cpu usage
+     * @throws ProfilingException
+     */
+    private double calculateMaxCpuUtilisation(Profile profile) throws ProfilingException {
+        return profile.deltaMetrics
+                .stream()
+                // Stats CPU usage (nano seconds) / stats time (milli seconds) * 1_000_000
+                .map(m -> m.getOrDefault(Metrics.STATS_TOTAL_CPU_USAGE, 0L) / (1_000_000. * m.getOrDefault(Metrics.STATS_TIME, 1L)))
+                .reduce(Math::max)
+                .orElseThrow(() -> new ProfilingException("Max CPU usage could not be calculated."));
+    }
+
     private double getAverageMemoryUtilization(Profile profile) throws ProfilingException {
-        double averageUsage = profile.metrics.stream()
+        double averageUsage = profile.metrics
+                .stream()
                 .map(m -> m.getOrDefault(Metrics.MEMORY_USAGE, 0L))
                 .filter(a -> a != 0L)
                 .mapToDouble(a -> a)
@@ -58,4 +76,13 @@ public class ProfileMetaInfo {
                 .orElseThrow(() -> new ProfilingException("Average memory usage could not be calculated."));
         return averageUsage / memoryLimit;
     }
+
+    private long getMaxMemoryUtilization(Profile profile) throws ProfilingException {
+        return profile.metrics
+                .stream()
+                .map(m -> m.getOrDefault(Metrics.MEMORY_USAGE, -1))
+                .reduce(Math::max)
+                .orElseThrow(() -> new ProfilingException("Max memory usage could not be calculated."));
+    }
+
 }

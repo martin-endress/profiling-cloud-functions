@@ -5,6 +5,7 @@ import com.github.dockerjava.api.model.Statistics;
 import de.uniba.dsg.serverless.profiling.util.MetricsUtil;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Metrics {
@@ -26,6 +27,8 @@ public class Metrics {
     public static final String TX_ERRORS = "tx_errors";
     public static final String TX_PACKETS = "tx_packets";
 
+    public static final List<String> CUMULATIVE = Arrays.asList("time", "user", STATS_TIME, STATS_TOTAL_CPU_USAGE, RX_BYTES, RX_DROPPED, RX_ERRORS, RX_PACKETS, TX_BYTES, TX_DROPPED, TX_ERRORS, TX_PACKETS);
+
     public Metrics(List<String> lines, long time) throws ProfilingException {
         relevantMetrics = new ArrayList<>(Arrays.asList("time", "user", "system"));
         metrics = fromLines(lines);
@@ -37,6 +40,20 @@ public class Metrics {
         timeStamp = stats.getRead();
         metrics = fromStatistics(stats, containerStartTime);
         validate();
+    }
+
+    /**
+     * Creates a Metrics based on two metrics. Calculates a delta Metrics which (if the metric is in CUMULATIVE) subtracts to - from
+     * Does not throw an exception and expects the input to be valid.
+     *
+     * @see Metrics#validate()
+     */
+    public Metrics(Metrics from, Metrics to) {
+        relevantMetrics = to.relevantMetrics;
+        this.timeStamp = to.timeStamp;
+        this.metrics = new HashMap<>();
+        metrics.putAll(to.metrics);
+        CUMULATIVE.forEach(s -> metrics.compute(s, (k, v) -> v - from.metrics.get(s)));
     }
 
     public Long getMetric(String metric) throws ProfilingException {

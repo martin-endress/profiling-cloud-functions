@@ -9,6 +9,8 @@ import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.InvocationBuilder.AsyncResultCallback;
 import com.github.dockerjava.core.command.BuildImageResultCallback;
+import com.github.dockerjava.core.command.WaitContainerCmdImpl;
+import com.github.dockerjava.core.command.WaitContainerResultCallback;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 import de.uniba.dsg.serverless.profiling.model.ResourceLimits;
 import de.uniba.dsg.serverless.profiling.util.MetricsUtil;
@@ -97,6 +99,19 @@ public class ContainerProfiling {
         containerId = container.getId();
         client.startContainerCmd(containerId).exec();
         return containerId;
+    }
+
+
+    /**
+     * Awaits the termination of the Container.
+     *
+     * @return status code
+     */
+    public int awaitTermination() {
+        return client
+                .waitContainerCmd(containerId)
+                .exec(new WaitContainerResultCallback())
+                .awaitStatusCode();
     }
 
     /**

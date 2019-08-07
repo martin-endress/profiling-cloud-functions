@@ -8,23 +8,25 @@ import org.apache.commons.lang.StringUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Profile {
 
-    public static final Path OUTPUT_FOLDER = Paths.get("profiles");
-
     public final int length;
     public final List<Metrics> metrics;
+    public final List<Metrics> deltaMetrics;
     public final InspectContainerResponse additional;
     public final Metrics lastMetrics;
     public final LocalDateTime started;
     public final LocalDateTime finished;
+
+    public double kFlops; // TODO maybe change this, quite ugly
 
     public Profile(List<Metrics> metrics, InspectContainerResponse additional) throws ProfilingException {
         if (metrics == null || metrics.isEmpty()) {
@@ -33,6 +35,7 @@ public class Profile {
         validateProfile(additional);
         this.length = metrics.size();
         this.metrics = metrics;
+        this.deltaMetrics = calculateDeltaMetrics();
         this.additional = additional;
         this.lastMetrics = metrics.get(length - 1);
 
@@ -44,8 +47,20 @@ public class Profile {
         }
     }
 
+    private List<Metrics> calculateDeltaMetrics() throws ProfilingException {
+        List<Metrics> l = new ArrayList<>();
+        l.add(metrics.get(0));
+        l.addAll(IntStream.range(0, metrics.size() - 1)
+                .mapToObj(i -> new Metrics(metrics.get(i), metrics.get(i + 1)))
+                .collect(Collectors.toList()));
+        return l;
+    }
+
+    public void setkFlops(double kFlops) {
+        this.kFlops = kFlops;
+    }
+
     public Path save(Path folder) throws ProfilingException {
-        folder = getFullPath(folder);
         try {
             Files.createDirectories(folder);
             saveCSV(folder);
@@ -84,11 +99,6 @@ public class Profile {
 
     private String getEmptyMetrics() {
         return additional.getState().getStartedAt() + StringUtils.repeat(",0", metrics.get(0).relevantMetrics.size());
-    }
-
-    private Path getFullPath(Path execution) {
-        String started = this.started.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME).replaceAll(":", "_");
-        return OUTPUT_FOLDER.resolve(execution).resolve("Profile_" + started);
     }
 
     private void validateProfile(InspectContainerResponse additional) throws ProfilingException {
