@@ -1,4 +1,6 @@
 /*
+** SOURCE: http://www.netlib.org/benchmark/linpackc.new
+**
 **
 ** LINPACK.C        Linpack benchmark, calculates FLOPS.
 **                  (FLoating Point Operations Per Second)
@@ -99,7 +101,7 @@ int main(void)
         printf("    Reps Time(s) DGEFA   DGESL  OVERHEAD    KFLOPS\n");
         printf("----------------------------------------------------\n");
 
-        FILE *f = fopen("artifacts/output.csv", "w");
+        FILE *f = fopen("./output.csv", "w");
         if (f == NULL)
         {
             printf("Error opening file!\n");
@@ -109,7 +111,7 @@ int main(void)
         fclose(f);
 
         nreps=1;
-        while (linpack(nreps,arsize)<2.) // CHANGE THIS BACK TO 10.
+        while (linpack(nreps,arsize)<10.)
             nreps*=2;
         free(mempool);
         printf("\n");
@@ -171,7 +173,7 @@ static REAL linpack(long nreps,int arsize)
             kflops);
     
     
-    FILE *f = fopen("artifacts/output.csv", "a");
+    FILE *f = fopen("output.csv", "a");
     if (f == NULL)
     {
         printf("Error opening file!\n");
