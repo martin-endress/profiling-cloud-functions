@@ -65,7 +65,7 @@ dependencies {
 task run(type: JavaExec, overwrite: true) {
     workingDir '../'
     classpath = sourceSets.main.runtimeClasspath
-    main = 'package.Main'
+    main = 'de.uniba.dsg.serverless.profiling.StatsRetriever'
 }
 
 jar {

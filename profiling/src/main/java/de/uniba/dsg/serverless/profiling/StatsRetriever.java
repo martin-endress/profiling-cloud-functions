@@ -57,11 +57,12 @@ public class StatsRetriever {
         ContainerProfiling serviceMock = new ContainerProfiling(SERVICE_MOCK_DOCKERFILE, SERVICE_MOCK_IMAGE);
         ContainerProfiling executor = new ContainerProfiling(EXECUTOR_DOCKERFILE, EXECUTOR_IMAGE);
         ContainerProfiling linpack = new ContainerProfiling(LINEPACK_DOCKERFILE, LINEPACK_IMAGE);
+
         //build(serviceMock);
         //build(executor);
         //build(linpack);
 
-        double kFlops = 2532596.;//getKFlops(linpack, profileFolder);
+        double kFlops = getKFlops(linpack, profileFolder);
         Map<String, String> environment = getParameters();
 
         environment.put("MOCK_PORT", "9000");
@@ -75,7 +76,7 @@ public class StatsRetriever {
             String containerId = executor.startContainer(environment, limits);
             containerStartTime = System.currentTimeMillis();
             System.out.println("Container started. (id=" + containerId + "/ startedAt=" + containerStartTime + ")");
-            Profile p = getProfileUsingBoth(executor, containerId);
+            Profile p = getProfileUsingDockerApi(executor);
             p.setkFlops(kFlops);
             p.save(profileFolder.resolve("profile" + i));
             profiles.add(p);
@@ -136,17 +137,6 @@ public class StatsRetriever {
             cgMetrics.addMetrics(apiMetrics);
             metrics.add(cgMetrics);
             statistics = profiling.getNextStatistics();
-        }
-        InspectContainerResponse additional = profiling.inspectContainer();
-        return new Profile(metrics, additional);
-    }
-
-    private Profile getProfileUsingControlGroups(ContainerProfiling profiling, String containerId) throws ProfilingException {
-        List<Metrics> metrics = new ArrayList<>();
-        ControlGroupProfiling controlGroupProfiling = new ControlGroupProfiling(containerId, containerStartTime);
-        while (controlGroupProfiling.metricsAvailable()) {
-            metrics.add(controlGroupProfiling.getMetric());
-            Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
         }
         InspectContainerResponse additional = profiling.inspectContainer();
         return new Profile(metrics, additional);

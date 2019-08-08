@@ -27,7 +27,7 @@ public class Metrics {
     public static final String TX_ERRORS = "tx_errors";
     public static final String TX_PACKETS = "tx_packets";
 
-    public static final List<String> CUMULATIVE = Arrays.asList("time", "user", STATS_TIME, STATS_TOTAL_CPU_USAGE, RX_BYTES, RX_DROPPED, RX_ERRORS, RX_PACKETS, TX_BYTES, TX_DROPPED, TX_ERRORS, TX_PACKETS);
+    public static final List<String> CUMULATIVE = Arrays.asList(STATS_TIME, STATS_TOTAL_CPU_USAGE, RX_BYTES, RX_DROPPED, RX_ERRORS, RX_PACKETS, TX_BYTES, TX_DROPPED, TX_ERRORS, TX_PACKETS);
 
     public Metrics(List<String> lines, long time) throws ProfilingException {
         relevantMetrics = new ArrayList<>(Arrays.asList("time", "user", "system"));

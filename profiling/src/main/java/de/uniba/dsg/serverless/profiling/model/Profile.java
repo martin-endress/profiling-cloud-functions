@@ -87,7 +87,7 @@ public class Profile {
                 .setPrettyPrinting()
                 .create();
         ProfileMetaInfo info = new ProfileMetaInfo(this);
-        Files.writeString(folder.resolve("meta.json"), jsonParser.toJson(info));
+        Files.write(folder.resolve("meta.json"), jsonParser.toJson(info).getBytes());
     }
 
     private String getHeader() {

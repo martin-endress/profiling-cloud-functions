@@ -7,7 +7,7 @@ import os
 This python script plots profiles created by the stats retriever.
 
 available items in dict:
-    local,user,system,stats_time,
+    stats_time,
     stats_total_cpu_usage,cpu_0,cpu_1,cpu_2,cpu_3,
     memory_usage,memory_cache,memory_limit
     rx_bytes,rx_dropped,rx_errors,rx_packets,
@@ -50,11 +50,9 @@ def getOptimal(time, delta):
 
 
 def plotFile(file, folder):
-    time = getEntries(file, 'time')
+    time = getEntries(file, 'stats_time')
     bytesRecieved = getDeltaEntries(file, 'rx_bytes')
     bytesSent = getDeltaEntries(file, 'tx_bytes')
-    cgroupCpuUsage = getDeltaEntries(file, 'user')
-    cgroupCpuSystemUsage = getEntries(file, 'system')
     statsCpuUsage = getDeltaEntries(file, 'stats_total_cpu_usage')
     memoryLimit = getEntries(file, 'memory_limit')
     memoryUsage = getEntries(file, 'memory_usage')
@@ -92,7 +90,7 @@ def plotFile(file, folder):
 
 for root, dirs, files in os.walk('../profiles/'):
     for file in files:
-        if file.endswith('.csv'):
+        if file.endswith('cs.csv'):
             csvFile = readCSVFile(root+'/'+file)
             plotFile(csvFile, root)
 
