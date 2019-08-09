@@ -1,9 +1,10 @@
 import csv
+import json
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as pyplot
 import numpy
 import os
-import json
-from scipy.stats import norm
+import scipy.stats as stats
 
 '''
 This python script plots meta data of multiple profiles created by the stats retriever.
@@ -44,23 +45,49 @@ def getOptimal(time, delta):
     return list(map(lambda x: x * delta, time))
 
 
-def plotFile(jsonFile, folder):
-    return jsonFile['averageMemoryUtilization']
+def plotBoth(caption, values):
+    plotHist(caption, values, False)
+    plotHist(caption, values, True)
 
 
-cpuUtilization = []
-for root, dirs, files in os.walk('../profiles/run3/'):
+def plotHist(caption, values, withDistribution):
+    count, bins, ignored = pyplot.hist(
+        values, facecolor='g', density=withDistribution)
+
+    pyplot.xlabel(caption)
+    pyplot.ylabel('Executions')
+    # pyplot.grid(True)
+    legend = ['Number of Executions']
+    if withDistribution:
+        mu, sigma = stats.norm.fit(values)
+        x = numpy.linspace(mu - 3*sigma, mu + 3*sigma, 100)
+        pyplot.plot(x, stats.norm.pdf(x, mu, sigma))
+        legend = ['Normal Distribution', 'Percentage of Executions']
+    pyplot.legend(legend)
+    pyplot.show()
+
+
+memoryUtilization = []
+cpuUtilisation = []
+durationMS = []
+maxMemoryUtilization = []
+
+# TODO change this to a parameter
+for root, dirs, files in os.walk('../profiles/20 runs limited/'):
+#for root, dirs, files in os.walk('../profiles/cpu_15runs(2.0CPU)/'):
+#for root, dirs, files in os.walk('../profiles/MEM_15runs(2.0CPU,2GBMEM)/'):
     for file in files:
         if file == 'meta.json':
             jsonFile = readJsonFile(root+'/'+file)
-            cpuUtilization.append(plotFile(jsonFile, root))
+            memoryUtilization.append(jsonFile['averageMemoryUtilization'])
+            cpuUtilisation.append(jsonFile['cpuUtilisation'])
+            durationMS.append(jsonFile['durationMS'])
+            maxMemoryUtilization.append(jsonFile['maxMemoryUtilization'])
 
-count, bins, ignored = pyplot.hist(cpuUtilization, normed=True)
-mu, sigma = norm.fit(cpuUtilization)
-pyplot.plot(bins, 1/(sigma * numpy.sqrt(2 * numpy.pi)) * numpy.exp( - (bins - mu)**2 / (2 * sigma**2) ), linewidth=1.5, color='r')
-
-#pyplot.hist(cpuUtilization)
-pyplot.show()
+plotHist('memoryUtilization', memoryUtilization, False)
+plotBoth('cpuUtilisation', cpuUtilisation)
+plotBoth('durationMS', durationMS)
+plotBoth('maxMemoryUtilization', maxMemoryUtilization)
 
 #csvFile = readCSVFile('artifacts/metrics.csv')
 # plotFile(csvFile)

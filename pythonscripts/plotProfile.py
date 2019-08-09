@@ -80,7 +80,7 @@ def plotFile(file, folder):
     color = 'tab:orange'
     ax3.set_ylabel('bytesRecieved', color=color)
     #ax3.set_ylim([0, 900000])
-    ax3.plot(time, bytesRecieved, color=color)
+    #ax3.plot(time, bytesRecieved, color=color)
     ax3.tick_params(axis='y', labelcolor=color)
 
     fig.tight_layout()
@@ -88,7 +88,7 @@ def plotFile(file, folder):
     # pyplot.show()
 
 
-for root, dirs, files in os.walk('../profiles/'):
+for root, dirs, files in os.walk('../profiles/cpu_15runs(2.0CPU)/'):
     for file in files:
         if file.endswith('cs.csv'):
             csvFile = readCSVFile(root+'/'+file)

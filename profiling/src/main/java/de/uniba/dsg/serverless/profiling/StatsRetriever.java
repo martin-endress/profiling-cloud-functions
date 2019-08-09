@@ -35,8 +35,8 @@ public class StatsRetriever {
     private static final String SERVICE_MOCK_DOCKERFILE = "serviceMock/Dockerfile";
     private static final String SERVICE_MOCK_IMAGE = "mendress/servicemock";
 
-    private static final String LINEPACK_DOCKERFILE = "linpack/Dockerfile";
-    private static final String LINEPACK_IMAGE = "mendress/linepack";
+    private static final String LINPACK_DOCKERFILE = "linpack/Dockerfile";
+    private static final String LINPACK_IMAGE = "mendress/linpack";
 
     public static void main(String[] args) {
         try {
@@ -56,15 +56,15 @@ public class StatsRetriever {
 
         ContainerProfiling serviceMock = new ContainerProfiling(SERVICE_MOCK_DOCKERFILE, SERVICE_MOCK_IMAGE);
         ContainerProfiling executor = new ContainerProfiling(EXECUTOR_DOCKERFILE, EXECUTOR_IMAGE);
-        ContainerProfiling linpack = new ContainerProfiling(LINEPACK_DOCKERFILE, LINEPACK_IMAGE);
+        ContainerProfiling linpack = new ContainerProfiling(LINPACK_DOCKERFILE, LINPACK_IMAGE);
 
-        //build(serviceMock);
-        //build(executor);
-        //build(linpack);
+        build(serviceMock);
+        build(executor);
+        build(linpack);
 
         double kFlops = getKFlops(linpack, profileFolder);
-        Map<String, String> environment = getParameters();
 
+        Map<String, String> environment = getParameters();
         environment.put("MOCK_PORT", "9000");
         serviceMock.startContainer(environment);
         environment.put("MOCK_IP", serviceMock.getIpAddress());
@@ -72,7 +72,7 @@ public class StatsRetriever {
         ResourceLimits limits = ResourceLimits.fromFile("limits.json");
 
         List<Profile> profiles = new ArrayList<>();
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 15; i++) {
             String containerId = executor.startContainer(environment, limits);
             containerStartTime = System.currentTimeMillis();
             System.out.println("Container started. (id=" + containerId + "/ startedAt=" + containerStartTime + ")");
@@ -87,13 +87,13 @@ public class StatsRetriever {
 
     private Map<String, String> getParameters() {
         Map<String, String> map = new HashMap<>();
-        map.put("LOAD_TIME", "3000");
-        map.put("CPU_FROM", "0.2");
-        map.put("CPU_TO", "0.4");
-        map.put("MEMORY_TO", "5000");
-        map.put("IO_FROM", "1");
-        map.put("IO_TO", "2");
-        map.put("IO_SIZE", "5000");
+        map.put("LOAD_TIME", "10000");
+        //map.put("CPU_FROM", "1");
+        //map.put("CPU_TO", "1");
+        map.put("MEMORY_TO", String.valueOf(1024 * 1024 * 1024)); // 1 gb
+        //map.put("IO_FROM", "1");
+        //map.put("IO_TO", "2");
+        //map.put("IO_SIZE", "5000");
         return map;
     }
 
@@ -103,8 +103,8 @@ public class StatsRetriever {
         if (statusCode != 0) {
             throw new ProfilingException("Benchmark failed. (status code = " + statusCode + ")");
         }
-        linpack.getFilesFromContainer("/usr/src/linpack/", profileFolder);
-        Path output = profileFolder.resolve("linpack/output.csv");
+        linpack.getFilesFromContainer("/usr/src/linpack/result/", profileFolder);
+        Path output = profileFolder.resolve("result/output.csv");
         if (!Files.exists(output)) {
             throw new ProfilingException("Benchmark failed. linpack/output.csv does not exist.");
         }

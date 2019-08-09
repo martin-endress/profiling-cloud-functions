@@ -101,7 +101,8 @@ int main(void)
         printf("    Reps Time(s) DGEFA   DGESL  OVERHEAD    KFLOPS\n");
         printf("----------------------------------------------------\n");
 
-        FILE *f = fopen("./output.csv", "w");
+        mkdir("result/", 0700);
+        FILE *f = fopen("result/output.csv", "w");
         if (f == NULL)
         {
             printf("Error opening file!\n");
@@ -173,7 +174,7 @@ static REAL linpack(long nreps,int arsize)
             kflops);
     
     
-    FILE *f = fopen("output.csv", "a");
+    FILE *f = fopen("result/output.csv", "a");
     if (f == NULL)
     {
         printf("Error opening file!\n");

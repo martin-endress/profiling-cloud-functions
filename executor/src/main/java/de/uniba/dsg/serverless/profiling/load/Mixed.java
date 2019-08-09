@@ -55,7 +55,7 @@ public class Mixed {
             double cpuFrom = Double.valueOf(System.getenv("CPU_FROM"));
             double cpuTo = Double.valueOf(System.getenv("CPU_TO"));
             return Optional.of(new CPULoad(cpuFrom, cpuTo, loadTime));
-        } catch (NumberFormatException e) {
+        } catch (NullPointerException | NumberFormatException e) {
             return Optional.empty();
         }
     }
@@ -64,7 +64,7 @@ public class Mixed {
         try {
             long memoryTo = Long.valueOf(System.getenv("MEMORY_TO"));
             return Optional.of(new MemoryLoad(memoryTo, loadTime));
-        } catch (NumberFormatException e) {
+        } catch (NullPointerException | NumberFormatException e) {
             return Optional.empty();
         }
     }
@@ -75,7 +75,7 @@ public class Mixed {
             int ioTo = Integer.valueOf(System.getenv("IO_TO"));
             int ioSize = Integer.valueOf(System.getenv("IO_SIZE"));
             return Optional.of(new IOLoad(ioFrom, ioTo, ioSize, loadTime));
-        } catch (NumberFormatException e) {
+        } catch (NullPointerException | NumberFormatException e) {
             return Optional.empty();
         }
     }
