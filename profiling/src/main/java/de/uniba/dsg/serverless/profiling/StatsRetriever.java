@@ -58,9 +58,9 @@ public class StatsRetriever {
         ContainerProfiling executor = new ContainerProfiling(EXECUTOR_DOCKERFILE, EXECUTOR_IMAGE);
         ContainerProfiling linpack = new ContainerProfiling(LINPACK_DOCKERFILE, LINPACK_IMAGE);
 
-        build(serviceMock);
+        //build(serviceMock);
         build(executor);
-        build(linpack);
+        //build(linpack);
 
         double kFlops = getKFlops(linpack, profileFolder);
 
@@ -88,9 +88,9 @@ public class StatsRetriever {
     private Map<String, String> getParameters() {
         Map<String, String> map = new HashMap<>();
         map.put("LOAD_TIME", "10000");
-        //map.put("CPU_FROM", "1");
-        //map.put("CPU_TO", "1");
-        map.put("MEMORY_TO", String.valueOf(1024 * 1024 * 1024)); // 1 gb
+        map.put("CPU_FROM", "1");
+        map.put("CPU_TO", "1");
+        //map.put("MEMORY_TO", String.valueOf(1024 * 1024 * 1024)); // 1 gb
         //map.put("IO_FROM", "1");
         //map.put("IO_TO", "2");
         //map.put("IO_SIZE", "5000");
