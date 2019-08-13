@@ -2,6 +2,7 @@ import csv
 import matplotlib.pyplot as pyplot
 import numpy
 import os
+import sys
 
 '''
 This python script plots profiles created by the stats retriever.
@@ -71,7 +72,7 @@ def plotFile(file, folder):
     color = 'tab:red'
     ax2.set_xlabel('time (ms)')
     ax2.set_ylabel('memoryUsage', color=color)
-    ax2.set_ylim([0, 900E6])
+    #ax2.set_ylim([0, 900E6])
     ax2.plot(time, memoryUsage, color=color)
     ax2.tick_params(axis='y', labelcolor=color)
 
@@ -88,7 +89,9 @@ def plotFile(file, folder):
     # pyplot.show()
 
 
-for root, dirs, files in os.walk('../profiles/cpu_15runs(2.0CPU)/'):
+path = str(sys.argv[1])
+
+for root, dirs, files in os.walk(path):
     for file in files:
         if file.endswith('cs.csv'):
             csvFile = readCSVFile(root+'/'+file)

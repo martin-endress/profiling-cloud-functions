@@ -5,6 +5,7 @@ import matplotlib.pyplot as pyplot
 import numpy
 import os
 import scipy.stats as stats
+import sys
 
 '''
 This python script plots meta data of multiple profiles created by the stats retriever.
@@ -45,12 +46,13 @@ def getOptimal(time, delta):
     return list(map(lambda x: x * delta, time))
 
 
-def plotBoth(caption, values):
-    plotHist(caption, values, False)
-    plotHist(caption, values, True)
+def plotBoth(path, caption, values):
+    plotHist(path, caption, values, False)
+    plotHist(path, caption, values, True)
 
 
-def plotHist(caption, values, withDistribution):
+def plotHist(path, caption, values, withDistribution):
+    f = pyplot.figure()
     count, bins, ignored = pyplot.hist(
         values, facecolor='g', density=withDistribution)
 
@@ -64,18 +66,23 @@ def plotHist(caption, values, withDistribution):
         pyplot.plot(x, stats.norm.pdf(x, mu, sigma))
         legend = ['Normal Distribution', 'Percentage of Executions']
     pyplot.legend(legend)
-    pyplot.show()
+    # pyplot.show()
+    dist = ''
+    if withDistribution:
+        dist = 'withD'
+    fileName = path + caption + dist + ".pdf"
+    f.savefig(fileName)
 
+
+# TODO validate input and
+path = str(sys.argv[1])
 
 memoryUtilization = []
 cpuUtilisation = []
 durationMS = []
 maxMemoryUtilization = []
 
-# TODO change this to a parameter
-for root, dirs, files in os.walk('../profiles/20 runs limited/'):
-#for root, dirs, files in os.walk('../profiles/cpu_15runs(2.0CPU)/'):
-#for root, dirs, files in os.walk('../profiles/MEM_15runs(2.0CPU,2GBMEM)/'):
+for root, dirs, files in os.walk(path):
     for file in files:
         if file == 'meta.json':
             jsonFile = readJsonFile(root+'/'+file)
@@ -84,10 +91,10 @@ for root, dirs, files in os.walk('../profiles/20 runs limited/'):
             durationMS.append(jsonFile['durationMS'])
             maxMemoryUtilization.append(jsonFile['maxMemoryUtilization'])
 
-plotHist('memoryUtilization', memoryUtilization, False)
-plotBoth('cpuUtilisation', cpuUtilisation)
-plotBoth('durationMS', durationMS)
-plotBoth('maxMemoryUtilization', maxMemoryUtilization)
+plotBoth(path, 'memoryUtilization', memoryUtilization)
+plotBoth(path, 'cpuUtilisation', cpuUtilisation)
+plotBoth(path, 'durationMS', durationMS)
+plotBoth(path, 'maxMemoryUtilization', maxMemoryUtilization)
 
 #csvFile = readCSVFile('artifacts/metrics.csv')
 # plotFile(csvFile)
