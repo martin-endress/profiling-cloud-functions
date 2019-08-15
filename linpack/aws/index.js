@@ -12,13 +12,23 @@ exports.handler = (event, context) => {
     name = event.queryStringParameters.experiment || name;
   }
   const filePath = "linpack/" + context.memoryLimitInMB + "/" + name;
+  const start = Date.now();
 
-  exec("./linpack", (error, stdout, stderr) => {
+  exec("./runme64", (error, stdout, stderr) => {
+    const end = Date.now();
+    const diff = end - start;
+
+    const rows = stdout.split("\n")
+    const row = rows[rows.length - 8];
+    const flops = parseFloat(row.split(/[\s,]+/)[4]);
+
+    const output = flops + " " + start + " " + end + " " + diff;
+
     s3.putObject({
       Bucket: 'martin-linpack',
       Key: filePath,
       Body: stdout
-    }, callback(name));
+    }, callback(output));
   });
 
   function callback(path) {

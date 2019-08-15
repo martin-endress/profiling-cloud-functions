@@ -1,8 +1,9 @@
-FROM gcc:9
+FROM archlinux/base
 
 WORKDIR /usr/src/linpack
 COPY linpack/local/ .
 
-RUN gcc -o linpack -O3 -march=native -lm linpack.c
+RUN pacman --noconfirm -Sy gawk
+RUN pacman --noconfirm -Sy numactl
 
-ENTRYPOINT ["./linpack"]
+CMD ["./runme64"]
