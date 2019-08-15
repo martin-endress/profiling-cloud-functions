@@ -19,7 +19,7 @@ public class Calibration {
     private static final int LINPACK_ARRAY_SIZE = 200;
 
 
-    public static final int[] MEMORY_SIZES = {1024, 2048};//{128, 256, 512, 1024, 2048, 3008};
+    public static final int[] MEMORY_SIZES = {128, 256, 512, 1024, 2048, 3008};
 
     private final Path calibrationFolder;
     private final String name;
@@ -59,7 +59,7 @@ public class Calibration {
         for (int memory : MEMORY_SIZES) {
             String keyName = "linpack/" + memory + "/" + name;
             System.out.println("waiting for object...");
-            client.waitForBucketObject(keyName, 300);
+            client.waitForBucketObject(keyName, 600);
             client.getFileFromBucket(keyName, calibrationFolder.resolve(memory + ".csv"));
         }
     }

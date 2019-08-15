@@ -16,7 +16,7 @@ public class Main {
     public static void main(String[] args) {
         final String profileName = "Profile_" + DateTimeFormatter.ofPattern("MM.dd_HH.mm.ss").format(LocalDateTime.now());
         try {
-            Calibration calibration = new Calibration("test4");
+            Calibration calibration = new Calibration("test1");
             //calibration.executeLocalBenchmark();
             calibration.executeAWSBenchmark();
 
@@ -30,3 +30,4 @@ public class Main {
         }
     }
 }
+

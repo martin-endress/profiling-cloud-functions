@@ -67,9 +67,9 @@ public class AWSClient {
                     .request()
                     .header("x-api-key", config.apiKey)
                     .get();
-        } catch (ProcessingException e) {
-            // expected -> timeout < function execution
-            // TODO change this
+        } catch (ProcessingException expected) {
+            // expected, since the timeout < function execution
+            // TODO remove this antipattern...
         }
     }
 
