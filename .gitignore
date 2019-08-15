@@ -122,6 +122,7 @@ bin
 *.d
 
 # Object files
+/linpack/aws/linpack
 *.o
 *.ko
 *.obj
