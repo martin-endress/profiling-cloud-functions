@@ -9,7 +9,7 @@ version '1.0'
 
 sourceCompatibility = 1.8
 
-mainClassName = "de.uniba.dsg.serverless.profiling.StatsRetriever"
+mainClassName = "de.uniba.dsg.serverless.Main"
 
 repositories {
     mavenCentral()
@@ -65,14 +65,14 @@ dependencies {
 task run(type: JavaExec, overwrite: true) {
     workingDir '../'
     classpath = sourceSets.main.runtimeClasspath
-    main = 'de.uniba.dsg.serverless.profiling.StatsRetriever'
+    main = 'de.uniba.dsg.serverless.Main'
 }
 
 jar {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     manifest {
         attributes(
-                'Main-Class': 'de.uniba.dsg.serverless.profiling.StatsRetriever'
+                'Main-Class': 'de.uniba.dsg.serverless.Main'
         )
     }
     from {

@@ -114,6 +114,8 @@ bin
 
 # profiles
 /profiles
+# calibration
+/calibration
 # out dir (logs and stuff)
 /out
 
