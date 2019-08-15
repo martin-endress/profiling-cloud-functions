@@ -20,20 +20,20 @@ exports.handler = (event, context) => {
       Body: stdout
     }, callback(name));
   });
-  var response = {
-    "statusCode": 200,
-    "body": filePath,
-    "isBase64Encoded": false
-  };
-
-  context.succeed(response);
 
   function callback(path) {
     return (err, resp) => {
       if (err) {
         console.log(err);
+        context.error(err);
       } else {
         console.log('Successfully uploaded package to ' + path);
+        var response = {
+          "statusCode": 200,
+          "body": filePath,
+          "isBase64Encoded": false
+        };
+        context.succeed(response);
       }
     }
   }

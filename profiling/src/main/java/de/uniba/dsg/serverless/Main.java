@@ -1,7 +1,6 @@
 package de.uniba.dsg.serverless;
 
 import de.uniba.dsg.serverless.calibration.Calibration;
-import de.uniba.dsg.serverless.profiling.StatsRetriever;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 
 import java.nio.file.Path;
@@ -17,7 +16,7 @@ public class Main {
     public static void main(String[] args) {
         final String profileName = "Profile_" + DateTimeFormatter.ofPattern("MM.dd_HH.mm.ss").format(LocalDateTime.now());
         try {
-            Calibration calibration = new Calibration("test3");
+            Calibration calibration = new Calibration("test4");
             //calibration.executeLocalBenchmark();
             calibration.executeAWSBenchmark();
 
