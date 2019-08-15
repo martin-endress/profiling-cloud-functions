@@ -35,7 +35,7 @@ public class StatsRetriever {
     private static final String SERVICE_MOCK_DOCKERFILE = "serviceMock/Dockerfile";
     private static final String SERVICE_MOCK_IMAGE = "mendress/servicemock";
 
-    private static final String LINPACK_DOCKERFILE = "linpack/Dockerfile";
+    private static final String LINPACK_DOCKERFILE = "linpack/local/Dockerfile";
     private static final String LINPACK_IMAGE = "mendress/linpack";
 
     public static void main(String[] args) {
