@@ -17,8 +17,9 @@ public class Main {
     public static void main(String[] args) {
         final String profileName = "Profile_" + DateTimeFormatter.ofPattern("MM.dd_HH.mm.ss").format(LocalDateTime.now());
         try {
-            Calibration calibration = new Calibration("test2");
-            calibration.executeLocalBenchmark();
+            Calibration calibration = new Calibration("test3");
+            //calibration.executeLocalBenchmark();
+            calibration.executeAWSBenchmark();
 
             //new StatsRetriever(OUTPUT_FOLDER,profileName).retrieveStats();
         } catch (ProfilingException e) {

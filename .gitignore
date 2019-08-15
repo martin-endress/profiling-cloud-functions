@@ -111,7 +111,8 @@ bin
 
 # logs
 /logs
-
+# aws credentials
+/profiling/src/main/resources/awsEndpointInfo.json
 # profiles
 /profiles
 # calibration
