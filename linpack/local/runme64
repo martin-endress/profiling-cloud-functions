@@ -37,6 +37,7 @@ else
   numacmd=
 fi
 
+mkdir output
 {
   date
   $numacmd ./linpack input

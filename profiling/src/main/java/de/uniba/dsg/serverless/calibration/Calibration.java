@@ -15,9 +15,7 @@ public class Calibration {
 
     private static final String LINPACK_DOCKERFILE = "linpack/local/Dockerfile";
     private static final String LINPACK_IMAGE = "mendress/linpack";
-    private static final String CONTAINER_RESULT_FOLDER = "/usr/src/linpack/result/"; // specified by linpack benchmark
-    private static final int LINPACK_ARRAY_SIZE = 200;
-
+    private static final String CONTAINER_RESULT_FOLDER = "/usr/src/linpack/output/"; // specified by linpack benchmark
 
     public static final int[] MEMORY_SIZES = {128, 256, 512, 1024, 2048, 3008};
 
@@ -35,19 +33,23 @@ public class Calibration {
     }
 
     public void executeLocalBenchmark() throws ProfilingException {
+        Path output = calibrationFolder.resolve("output/out.txt");
+        if (Files.exists(output)) {
+            System.out.println("Calibration already performed.");
+            return;
+        }
         ContainerProfiling linpack = new ContainerProfiling(LINPACK_DOCKERFILE, LINPACK_IMAGE);
         linpack.buildContainer();
-        linpack.startContainer(Collections.singletonMap("LINPACK_ARRAY_SIZE", String.valueOf(LINPACK_ARRAY_SIZE)));
+        linpack.startContainer();
         int statusCode = linpack.awaitTermination();
         if (statusCode != 0) {
             throw new ProfilingException("Benchmark failed. (status code = " + statusCode + ")");
         }
         linpack.getFilesFromContainer(CONTAINER_RESULT_FOLDER, calibrationFolder);
-        Path output = calibrationFolder.resolve("result/output.csv");
         if (!Files.exists(output)) {
-            throw new ProfilingException("Benchmark failed. linpack/output.csv does not exist.");
+            throw new ProfilingException("Benchmark failed. output/out.txt does not exist.");
         }
-        BenchmarkParser parser = new BenchmarkParser(calibrationFolder, output);
+        BenchmarkParser parser = new BenchmarkParser(output, calibrationFolder);
         parser.parseBenchmark();
     }
 

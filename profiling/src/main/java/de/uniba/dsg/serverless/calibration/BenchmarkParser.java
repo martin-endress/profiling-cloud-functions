@@ -25,13 +25,7 @@ public class BenchmarkParser {
         this.outputPath = outputPath;
     }
 
-    public static void main(String[] args) throws ProfilingException {
-        BenchmarkParser p = new BenchmarkParser(Paths.get("calibration/test1/128.csv"), Paths.get("calibration/test1"));
-        BenchmarkResult r = p.parseBenchmark1();
-        p.writeResultsToFile(r);
-    }
-
-    public BenchmarkResult parseBenchmark1() throws ProfilingException {
+    public BenchmarkResult parseBenchmark() throws ProfilingException {
         if (!Files.exists(benchmarkPath)) {
             throw new ProfilingException("Benchmark file does not exist.");
         }
@@ -42,24 +36,6 @@ public class BenchmarkParser {
             return new BenchmarkResult(Double.parseDouble(parts[3]), Double.parseDouble(parts[4]));
         } catch (IOException e) {
             throw new ProfilingException("Could not read file. ", e);
-        }
-    }
-
-    public void parseBenchmark() throws ProfilingException {
-        if (!Files.exists(benchmarkPath)) {
-            throw new ProfilingException("Benchmark file does not exist.");
-        }
-        try {
-            CSVParser parser = CSVParser.parse(benchmarkPath, Charsets.UTF_8, CSVFormat.DEFAULT.withFirstRecordAsHeader());
-            double averageKFlops = parser.getRecords()
-                    .stream()
-                    .map(r -> r.get("KFLOPS"))
-                    .mapToDouble(Double::parseDouble)
-                    .average()
-                    .orElseThrow(() -> new ProfilingException("Average kFlops could not be calculated."));
-            writeResultsToFile(new BenchmarkResult(averageKFlops, averageKFlops));
-        } catch (IOException e) {
-            throw new ProfilingException("Could not read output file.", e);
         }
     }
 
