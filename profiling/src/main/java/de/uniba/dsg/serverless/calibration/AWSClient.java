@@ -70,6 +70,7 @@ public class AWSClient {
         } catch (ProcessingException expected) {
             // expected, since the timeout < function execution
             // TODO remove this antipattern...
+            return;
         }
     }
 

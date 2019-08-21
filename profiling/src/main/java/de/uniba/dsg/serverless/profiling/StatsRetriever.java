@@ -35,7 +35,7 @@ public class StatsRetriever {
         ContainerProfiling serviceMock = new ContainerProfiling(SERVICE_MOCK_DOCKERFILE, SERVICE_MOCK_IMAGE);
         ContainerProfiling executor = new ContainerProfiling(EXECUTOR_DOCKERFILE, EXECUTOR_IMAGE);
 
-        serviceMock.buildContainer();
+        //serviceMock.buildContainer();
         executor.buildContainer();
 
         Map<String, String> environment = getParameters();
@@ -46,12 +46,12 @@ public class StatsRetriever {
         ResourceLimits limits = ResourceLimits.fromFile("limits.json");
 
         List<Profile> profiles = new ArrayList<>();
-        for (int i = 0; i < 15; i++) {
-            String containerId = executor.startContainer(environment, limits);
+        for (double limit = 0.05; limit < 1.01; limit += 0.05) {
+            String containerId = executor.startContainer(environment, new ResourceLimits(limit, 0));
             containerStartTime = System.currentTimeMillis();
             System.out.println("Container started. (id=" + containerId + "/ startedAt=" + containerStartTime + ")");
             Profile p = getProfileUsingDockerApi(executor);
-            p.save(profileFolder.resolve("profile" + i));
+            p.save(profileFolder.resolve("profile_limit_" + limit));
             profiles.add(p);
         }
         serviceMock.kill();
@@ -60,8 +60,9 @@ public class StatsRetriever {
     private Map<String, String> getParameters() {
         Map<String, String> map = new HashMap<>();
         map.put("LOAD_TIME", "10000");
-        map.put("CPU_FROM", "1");
-        map.put("CPU_TO", "1");
+
+        map.put("CPU_SLEEP", "50");
+        ///map.put("CPU_TO", "0.5");
         //map.put("MEMORY_TO", String.valueOf(1024 * 1024 * 1024)); // 1 gb
         //map.put("IO_FROM", "1");
         //map.put("IO_TO", "2");

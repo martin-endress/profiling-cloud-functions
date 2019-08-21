@@ -18,11 +18,9 @@ public class BenchmarkParser {
     public static final String BENCHMARK_NAME = "benchmark.json";
 
     private final Path benchmarkPath;
-    private final Path outputPath;
 
-    public BenchmarkParser(Path benchmarkPath, Path outputPath) {
+    public BenchmarkParser(Path benchmarkPath) {
         this.benchmarkPath = benchmarkPath;
-        this.outputPath = outputPath;
     }
 
     public BenchmarkResult parseBenchmark() throws ProfilingException {
@@ -36,15 +34,6 @@ public class BenchmarkParser {
             return new BenchmarkResult(Double.parseDouble(parts[3]), Double.parseDouble(parts[4]));
         } catch (IOException e) {
             throw new ProfilingException("Could not read file. ", e);
-        }
-    }
-
-    private void writeResultsToFile(BenchmarkResult result) throws ProfilingException {
-        String resultJson = new GsonBuilder().setPrettyPrinting().create().toJson(result);
-        try {
-            Files.write(outputPath.resolve(BENCHMARK_NAME), resultJson.getBytes());
-        } catch (IOException e) {
-            throw new ProfilingException("Could not write to file", e);
         }
     }
 

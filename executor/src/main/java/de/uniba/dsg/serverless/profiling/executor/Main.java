@@ -8,7 +8,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             Mixed m = new Mixed();
-            m.simulateLoad();
+            m.simulateLoad1();
         } catch (ProfilingException e) {
             System.err.println(e.getMessage());
             if (e.getCause() != null) {

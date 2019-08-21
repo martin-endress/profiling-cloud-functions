@@ -32,16 +32,20 @@ public class Mixed {
         memoryLoad.ifPresent(service::submit);
         ioLoad.ifPresent(service::submit);
 
-        Uninterruptibles.sleepUninterruptibly(loadTime, TimeUnit.MILLISECONDS);
+        //Uninterruptibles.sleepUninterruptibly(loadTime, TimeUnit.MILLISECONDS);
         shutdownAndAwaitTermination(service);
+    }
+
+    public void simulateLoad1() {
+        cpuLoad.ifPresent(CPULoad::run);
     }
 
     private void shutdownAndAwaitTermination(ExecutorService pool) {
         pool.shutdown();
         try {
-            if (!pool.awaitTermination(10, TimeUnit.SECONDS)) {
+            if (!pool.awaitTermination(10, TimeUnit.MINUTES)) {
                 pool.shutdownNow();
-                if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+                if (!pool.awaitTermination(1, TimeUnit.MINUTES)) {
                     System.err.println("Pool did not terminate");
                 }
             }
@@ -52,9 +56,8 @@ public class Mixed {
 
     private Optional<CPULoad> getCpuLoad() {
         try {
-            double cpuFrom = Double.valueOf(System.getenv("CPU_FROM"));
-            double cpuTo = Double.valueOf(System.getenv("CPU_TO"));
-            return Optional.of(new CPULoad(cpuFrom, cpuTo, loadTime));
+            int cpuSleep = Integer.valueOf(System.getenv("CPU_SLEEP"));
+            return Optional.of(new CPULoad(cpuSleep, loadTime));
         } catch (NullPointerException | NumberFormatException e) {
             return Optional.empty();
         }

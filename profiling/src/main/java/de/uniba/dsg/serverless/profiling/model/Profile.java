@@ -26,8 +26,6 @@ public class Profile {
     public final LocalDateTime started;
     public final LocalDateTime finished;
 
-    public double kFlops; // TODO maybe change this, quite ugly
-
     public Profile(List<Metrics> metrics, InspectContainerResponse additional) throws ProfilingException {
         if (metrics == null || metrics.isEmpty()) {
             throw new ProfilingException("Metrics must be a non empty List.");
@@ -56,10 +54,6 @@ public class Profile {
         return l;
     }
 
-    public void setkFlops(double kFlops) {
-        this.kFlops = kFlops;
-    }
-
     public Path save(Path folder) throws ProfilingException {
         try {
             Files.createDirectories(folder);
@@ -73,7 +67,6 @@ public class Profile {
 
     private void saveCSV(Path folder) throws IOException {
         List<String> lines = new ArrayList<>();
-        lines.add(toString());          // python doesn't read first line (TODO -> python)
         lines.add(getHeader());         // header
         lines.add(getEmptyMetrics());   // adds empty metrics with (<start time>,0,0,..)
         for (Metrics m : metrics) {

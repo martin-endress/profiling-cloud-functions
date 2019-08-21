@@ -1,6 +1,6 @@
 package de.uniba.dsg.serverless;
 
-import de.uniba.dsg.serverless.calibration.Calibration;
+import de.uniba.dsg.serverless.profiling.StatsRetriever;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 
 import java.nio.file.Path;
@@ -16,11 +16,14 @@ public class Main {
     public static void main(String[] args) {
         final String profileName = "Profile_" + DateTimeFormatter.ofPattern("MM.dd_HH.mm.ss").format(LocalDateTime.now());
         try {
-            Calibration calibration = new Calibration("test1");
-            //calibration.executeLocalBenchmark();
-            calibration.executeAWSBenchmark();
-
-            //new StatsRetriever(OUTPUT_FOLDER,profileName).retrieveStats();
+            //double[] limits = new double[]{1.25, 1.5, 1.75, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75};
+            //for (double limit : limits) {
+            //    System.out.println("running limit " + limit);
+            //    Calibration calibration = new Calibration("experiment_local_" + limit);
+            //    calibration.executeLocalBenchmark(limit);
+            //}
+            //calibration.executeAWSBenchmark();
+            new StatsRetriever(OUTPUT_FOLDER, profileName).retrieveStats();
         } catch (ProfilingException e) {
             System.err.println(e.getMessage());
             Optional.ofNullable(e.getCause())
@@ -30,4 +33,3 @@ public class Main {
         }
     }
 }
-

@@ -13,11 +13,10 @@ public class ProfileMetaInfo {
     public final InspectContainerResponse.ContainerState state;
     public final long durationMS;
     public double cpuUtilisation; // relative to the quota
-    public double maxCpuUtilisation; // maximum cpu utilization // TODO maybe change this to relative to quota also
+    public double maxCpuUtilisation; // maximum cpu utilization // TODO maybe change this to relative to quota (and calibration)
     public long maxMemoryUtilization;
     public double memoryLimit;
     public double averageMemoryUtilization;
-    public double kFlops;
 
     /**
      * Creates Profile Meta data which are parsed to json
@@ -32,7 +31,6 @@ public class ProfileMetaInfo {
         imageId = additional.getImageId();
         state = additional.getState();
         durationMS = MetricsUtil.timeDifference(state.getStartedAt(), state.getFinishedAt());
-        kFlops = profile.kFlops;
         if (profile.lastMetrics.containsMetric(Metrics.STATS_TOTAL_CPU_USAGE)) {
             cpuUtilisation = calculateCpuUtilization(profile);
             maxCpuUtilisation = calculateMaxCpuUtilisation(profile);
