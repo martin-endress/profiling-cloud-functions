@@ -17,9 +17,27 @@ public class ResourceLimits {
 
     public static final Path FOLDER = Paths.get("profiling", "src", "main", "resources");
 
+
+    /**
+     * Creates resource limits using MB as the unit.
+     *
+     * @param cpuLimit    cpu Quota
+     * @param memoryLimit memory limit
+     */
     public ResourceLimits(double cpuLimit, long memoryLimit) {
+        this(cpuLimit, memoryLimit, MemoryUnit.MB);
+    }
+
+    /**
+     * Creates resource limits.
+     *
+     * @param cpuLimit    cpu quota
+     * @param memoryLimit memory limit
+     * @param unit        memory unit
+     */
+    public ResourceLimits(double cpuLimit, long memoryLimit, MemoryUnit unit) {
         this.cpuLimit = cpuLimit;
-        this.memoryLimit = memoryLimit;
+        this.memoryLimit = unit.toBytes(memoryLimit);
     }
 
     public static ResourceLimits unlimited() {
@@ -36,4 +54,43 @@ public class ResourceLimits {
         }
     }
 
+    public long getMemoryLimitInMb() {
+        return MemoryUnit.MB.fromBytes(this.memoryLimit);
+    }
+
+    @Override
+    public String toString() {
+        return "Resource Limits (quota=" + this.cpuLimit + ", memory=" + MemoryUnit.MB.fromBytes(this.memoryLimit) + "MB)";
+    }
+}
+
+
+enum MemoryUnit {
+    B, KB, MB, GB;
+
+    long toBytes(long memory) {
+        switch (this) {
+            case GB:
+                memory *= 1024;
+            case MB:
+                memory *= 1024;
+            case KB:
+                memory *= 1024;
+            default:
+                return memory;
+        }
+    }
+
+    long fromBytes(long memory) {
+        switch (this) {
+            case GB:
+                memory /= 1024;
+            case MB:
+                memory /= 1024;
+            case KB:
+                memory /= 1024;
+            default:
+                return memory;
+        }
+    }
 }

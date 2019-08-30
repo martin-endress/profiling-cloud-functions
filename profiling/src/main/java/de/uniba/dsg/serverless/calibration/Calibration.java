@@ -10,31 +10,33 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Calibration {
 
+    // Constants
+    private static final String LOCAL_CALIBRATION_FILE_NAME = "localCalibration.csv";
+    private static final String PROVIDER_CALIBRATION_FILE_NAME = "providerCalibration.csv";
     private static final String LINPACK_DOCKERFILE = "linpack/local/Dockerfile";
     private static final String LINPACK_IMAGE = "mendress/linpack";
     private static final String CONTAINER_RESULT_FOLDER = "/usr/src/linpack/output/"; // specified by linpack benchmark
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.###");
 
-    public static final int[] MEMORY_SIZES = {128, 256, 512, 1024, 2048, 3008};
-
-    private final List<Double> quotas;
-    private final Path calibrationFolder;
     private final String name;
-    private final ContainerProfiling linpack;
+    private final Path calibrationFolder;
+    public final Path localCalibrationOutput;
+    public final Path providerCalibrationOutput;
 
-    DecimalFormat decimalFormat = new DecimalFormat("#.###");
+    // Docker specific
+    private final ContainerProfiling linpack = new ContainerProfiling(LINPACK_DOCKERFILE, LINPACK_IMAGE);
 
 
-    public Calibration(String name, List<Double> quotas) throws ProfilingException {
+    public Calibration(String name) throws ProfilingException {
         this.name = name;
         calibrationFolder = Paths.get("calibration", name);
-        this.quotas = quotas;
-        linpack = new ContainerProfiling(LINPACK_DOCKERFILE, LINPACK_IMAGE);
+        localCalibrationOutput = calibrationFolder.resolve(LOCAL_CALIBRATION_FILE_NAME);
+        providerCalibrationOutput = calibrationFolder.resolve(PROVIDER_CALIBRATION_FILE_NAME);
         try {
             Files.createDirectories(calibrationFolder);
         } catch (IOException e) {
@@ -42,9 +44,9 @@ public class Calibration {
         }
     }
 
-    public void executeLocalBenchmarks() throws ProfilingException {
-        if (Files.exists(calibrationFolder.resolve("results.csv"))) {
-            System.out.println("Calibration already performed.");
+    public void calibrateLocal(List<Double> quotas) throws ProfilingException {
+        if (Files.exists(localCalibrationOutput)) {
+            System.out.println("Local calibration already performed.");
             return;
         }
         System.out.println("building Container");
@@ -57,17 +59,16 @@ public class Calibration {
         }
         StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append(quotas.stream().map(decimalFormat::format).collect(Collectors.joining(",")));
+        stringBuilder.append(quotas.stream().map(DECIMAL_FORMAT::format).collect(Collectors.joining(",")));
         stringBuilder.append("\n");
         stringBuilder.append(results.stream().map(String::valueOf).collect(Collectors.joining(",")));
         stringBuilder.append("\n");
 
         try {
-            Files.write(calibrationFolder.resolve("results.csv"), stringBuilder.toString().getBytes());
+            Files.write(localCalibrationOutput, stringBuilder.toString().getBytes());
         } catch (IOException e) {
-            throw new ProfilingException(e);
+            throw new ProfilingException("Could not write local calibration to " + localCalibrationOutput.toString(), e);
         }
-
     }
 
     private double executeLocalBenchmark(double limit) throws ProfilingException {
@@ -77,9 +78,9 @@ public class Calibration {
             throw new ProfilingException("Benchmark failed. (status code = " + statusCode + ")");
         }
         linpack.getFilesFromContainer(CONTAINER_RESULT_FOLDER, calibrationFolder);
-        Path output = calibrationFolder.resolve(limit + "").resolve("out.txt");
+        Path output = calibrationFolder.resolve("local" + limit).resolve("out.txt");
         try {
-            Files.move(calibrationFolder.resolve("output"), output);
+            Files.move(calibrationFolder.resolve("output"), output.getParent());
         } catch (IOException e) {
             throw new ProfilingException(e);
         }
@@ -90,30 +91,41 @@ public class Calibration {
         return result.average;
     }
 
-    public void executeAWSBenchmark() throws ProfilingException {
-        AWSClient client = new AWSClient();
-        for (int memory : MEMORY_SIZES) {
+    public void calibrateProvider(String targetUrl, String apiKey, String bucketName, List<Integer> memorySizes, int numberOfCalibrations) throws ProfilingException {
+        if (Files.exists(localCalibrationOutput)) {
+            System.out.println("Provider calibration already performed.");
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(memorySizes.stream().map(String::valueOf).collect(Collectors.joining(",")));
+        sb.append("\n");
+
+        AWSClient client = new AWSClient(targetUrl, apiKey, bucketName);
+        for (int i = 0; i < numberOfCalibrations; i++) {
+            List<Double> results = executeProviderCalibration(client, memorySizes);
+            sb.append(results.stream().map(String::valueOf).collect(Collectors.joining(",")));
+        }
+        try {
+            Files.write(providerCalibrationOutput, sb.toString().getBytes());
+        } catch (IOException e) {
+            throw new ProfilingException(e);
+        }
+    }
+
+    // While using a map would be more clean, the guaranteed order of a List is enough in this case. -> makes serialisation easier :)
+    private List<Double> executeProviderCalibration(AWSClient client, List<Integer> memorySizes) throws ProfilingException {
+        for (int memory : memorySizes) {
             client.invokeBenchmarkFunctions(memory, name);
         }
-        List<BenchmarkResult> results = new ArrayList<>();
-        for (int memory : MEMORY_SIZES) {
+        List<Double> results = new ArrayList<>();
+        for (int memory : memorySizes) {
             Path out = calibrationFolder.resolve(memory + ".csv");
             String keyName = "linpack/" + memory + "/" + name;
             client.waitForBucketObject(keyName, 600);
             client.getFileFromBucket(keyName, out);
-            results.add(new BenchmarkParser(out).parseBenchmark());
+            results.add(new BenchmarkParser(out).parseBenchmark().average);
         }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(Arrays.stream(MEMORY_SIZES).mapToObj(String::valueOf).collect(Collectors.joining(",")));
-        sb.append("\n");
-        sb.append(results.stream().map(a -> String.valueOf(a.average)).collect(Collectors.joining(",")));
-        System.out.println(sb.toString());
-        try {
-            Files.write(calibrationFolder.resolve("awsResults.csv"), sb.toString().getBytes());
-        } catch (IOException e) {
-            throw new ProfilingException(e);
-        }
+        return results;
     }
 }
 

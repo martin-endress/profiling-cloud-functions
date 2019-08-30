@@ -56,4 +56,10 @@ public class ProviderPerformanceModel {
     public double getGflops(int memory) {
         return regression.predict(memory);
     }
+
+
+    @Override
+    public String toString() {
+        return "Provider Performance Model: f(x) = " + regression.getSlope() + " x + " + regression.getIntercept() + " (R=" + regression.getR() + ")";
+    }
 }

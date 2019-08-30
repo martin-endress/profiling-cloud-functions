@@ -9,13 +9,16 @@ import de.uniba.dsg.serverless.profiling.model.ResourceLimits;
 import de.uniba.dsg.serverless.profiling.profiling.ContainerProfiling;
 import de.uniba.dsg.serverless.profiling.profiling.ControlGroupProfiling;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class StatsRetriever {
     private long containerStartTime = 0L;
 
-    private final Path outputFoder;
+    public static final Path OUTPUT_FOLDER = Paths.get("profiles");
+    public final Path profileFolder;
     private final String profileName;
 
     private static final String EXECUTOR_DOCKERFILE = "executor/Dockerfile";
@@ -24,54 +27,55 @@ public class StatsRetriever {
     private static final String SERVICE_MOCK_DOCKERFILE = "serviceMock/Dockerfile";
     private static final String SERVICE_MOCK_IMAGE = "mendress/servicemock";
 
-    public StatsRetriever(Path outputFoder, String profileName) {
-        this.outputFoder = outputFoder;
+    private ContainerProfiling serviceMock;
+    private ContainerProfiling executor;
+
+    public StatsRetriever(String profileName) throws ProfilingException {
+        this(profileName, true);
+    }
+
+    public StatsRetriever(String profileName, boolean withBuild) throws ProfilingException {
         this.profileName = profileName;
-    }
+        profileFolder = OUTPUT_FOLDER.resolve(profileName);
 
-    public void retrieveStats() throws ProfilingException {
-        final Path profileFolder = outputFoder.resolve(profileName);
-
-        ContainerProfiling serviceMock = new ContainerProfiling(SERVICE_MOCK_DOCKERFILE, SERVICE_MOCK_IMAGE);
-        ContainerProfiling executor = new ContainerProfiling(EXECUTOR_DOCKERFILE, EXECUTOR_IMAGE);
-
-        serviceMock.buildContainer();
-        executor.buildContainer();
-
-        Map<String, String> environment = getParameters();
-        environment.put("MOCK_PORT", "9000");
-        serviceMock.startContainer(environment);
-        environment.put("MOCK_IP", serviceMock.getIpAddress());
-
-        ResourceLimits limits = ResourceLimits.fromFile("limits.json");
-
-        List<Profile> profiles = new ArrayList<>();
-        for (int i = 0; i < 50; i++) {
-            String containerId = executor.startContainer(environment, limits);
-            containerStartTime = System.currentTimeMillis();
-            System.out.println("Container started. (id=" + containerId + "/ startedAt=" + containerStartTime + ")");
-            Profile p = getProfileUsingDockerApi(executor);
-            p.save(profileFolder.resolve("profile" + i));
-            profiles.add(p);
+        serviceMock = new ContainerProfiling(SERVICE_MOCK_DOCKERFILE, SERVICE_MOCK_IMAGE);
+        executor = new ContainerProfiling(EXECUTOR_DOCKERFILE, EXECUTOR_IMAGE);
+        if (withBuild) {
+            System.out.println("Building containers...");
+            serviceMock.buildContainer();
+            executor.buildContainer();
         }
-        serviceMock.kill();
     }
 
-    private Map<String, String> getParameters() {
-        Map<String, String> map = new HashMap<>();
-        map.put("LOAD_TIME", "30000");
+    public void profile(Map<String, String> loadPattern, ResourceLimits limits, int numberOfProfiles) throws ProfilingException {
+        Path a = (i) -> {
+            return profileFolder.resolve(limits.getMemoryLimitInMb() + "_" + i)
+        };
+        
+        Path profilePath = profileFolder.resolve(limits.getMemoryLimitInMb() + "_" + 0);
+        if (Files.exists(profilePath)) {
+            System.out.println("Profile has already been created.");
+            return;
+        }
 
-        map.put("CPU_FIBONACCI", "45");
+        loadPattern.put("MOCK_PORT", "9000");
+        try {
+            serviceMock.startContainer(loadPattern);
+            loadPattern.put("MOCK_IP", serviceMock.getIpAddress());
+            for (int p = 0; p < numberOfProfiles; p++) {
+                Profile profile = getProfile(loadPattern, limits);
+                profile.save(profilePath);
+            }
+        } finally {
+            serviceMock.kill();
+        }
+    }
 
-        //map.put("CPU_FROM", "0");
-        //map.put("CPU_TO", "0.6");
-
-        map.put("MEMORY_TO", String.valueOf(64 * 1024 * 1024)); // 64 mb
-
-        //map.put("IO_FROM", "0");
-        //map.put("IO_TO", "10");
-        //map.put("IO_SIZE", String.valueOf(1024 * 1024));
-        return map;
+    private Profile getProfile(Map<String, String> environment, ResourceLimits limits) throws ProfilingException {
+        String containerId = executor.startContainer(environment, limits);
+        containerStartTime = System.currentTimeMillis();
+        System.out.println("Container started. (id=" + containerId + "/ startedAt=" + containerStartTime + ")");
+        return getProfileUsingDockerApi(executor);
     }
 
     private Profile getProfileUsingBoth(ContainerProfiling profiling, String containerId) throws ProfilingException {

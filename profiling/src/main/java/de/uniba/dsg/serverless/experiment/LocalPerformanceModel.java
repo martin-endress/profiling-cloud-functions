@@ -11,37 +11,30 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 public class LocalPerformanceModel {
 
-    private static final String MODEL_TYPE = "average";
-
-    private SimpleRegression regression;
+    private SimpleRegression regression = new SimpleRegression();
 
     /**
      * Creates a LocalPerformanceModel
-     */
-    public LocalPerformanceModel() {
-        regression = new SimpleRegression();
-    }
-
-    /**
-     * Adds a measurement to the regression model.
      *
-     * @param quota            CPU quota
      * @param localCalibration Path to the local calibration CSV file
      * @throws ProfilingException when the file is not well formed.
      */
-    public void addLocalCalibration(double quota, Path localCalibration) throws ProfilingException {
+    public LocalPerformanceModel(Path localCalibration) throws ProfilingException {
         try {
             Reader reader = Files.newBufferedReader(localCalibration);
             CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
             List<CSVRecord> records = parser.getRecords();
-            if (records.isEmpty() || !records.get(0).isMapped(MODEL_TYPE)) {
-                throw new ProfilingException("Corrupt input file." + localCalibration.toString());
+            if (records.isEmpty()) {
+                throw new ProfilingException("Corrupt input file. " + localCalibration.toString());
             }
-            CSVRecord performanceMeasurement = records.get(0);
-            regression.addData(quota, Double.parseDouble(performanceMeasurement.get(MODEL_TYPE)));
+            Map<String, String> measurements = records.get(0).toMap();
+            for (String key : measurements.keySet()) {
+                regression.addData(Double.parseDouble(key), Double.parseDouble(measurements.get(key)));
+            }
         } catch (IOException e) {
             throw new ProfilingException();
         }

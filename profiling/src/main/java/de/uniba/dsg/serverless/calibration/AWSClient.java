@@ -29,28 +29,34 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class AWSClient {
-
-    private final AWSConfig config;
     private final AmazonS3 s3;
     private final WebTarget lambdaTarget;
+
+    private final String bucketName;
+    private final String apiKey;
 
     /**
      * Creates an AWSClient
      *
+     * @param targetUrl  target URL of linpack calibration
+     * @param apiKey     AWS api key
+     * @param bucketName bucket name where results are stored
      * @throws ProfilingException if the AWS S3 Client could not be created (check credentials and resources/awsEndpointInfo.json)
      */
-    public AWSClient() throws ProfilingException {
-        config = AWSConfig.getConfig();
+    public AWSClient(String targetUrl, String apiKey, String bucketName) throws ProfilingException {
         try {
             s3 = AmazonS3ClientBuilder.standard().withRegion(Regions.EU_CENTRAL_1).build();
         } catch (AmazonServiceException e) {
             throw new ProfilingException("AWS could not be accessed.", e);
         }
         ClientConfig configuration = new ClientConfig();
+        // Avoid AWS Gateway Timeout by using local timeout of 1s
         configuration = configuration.property(ClientProperties.CONNECT_TIMEOUT, 1000);
         configuration = configuration.property(ClientProperties.READ_TIMEOUT, 1000);
         Client client = ClientBuilder.newClient(configuration);
-        lambdaTarget = client.target(config.targetUrl);
+        lambdaTarget = client.target(targetUrl);
+        this.bucketName = bucketName;
+        this.apiKey = apiKey;
     }
 
     /**
@@ -65,11 +71,10 @@ public class AWSClient {
             lambdaTarget.path(path)
                     .queryParam("experiment", folderName)
                     .request()
-                    .header("x-api-key", config.apiKey)
+                    .header("x-api-key", apiKey)
                     .get();
-        } catch (ProcessingException expected) {
-            // expected, since the timeout < function execution
-            // TODO remove this antipattern...
+        } catch (ProcessingException ignored) {
+            // expected, since the AWS gateway timeout < function execution
             return;
         }
     }
@@ -85,7 +90,7 @@ public class AWSClient {
         timeout = timeout * 1_000; // convert to ms
         long startTime = System.currentTimeMillis();
         while (System.currentTimeMillis() < startTime + timeout) {
-            ListObjectsV2Result result = s3.listObjectsV2(config.bucketName);
+            ListObjectsV2Result result = s3.listObjectsV2(bucketName);
             List<S3ObjectSummary> objects = result.getObjectSummaries();
             if (objects.stream().anyMatch(a -> keyName.equals(a.getKey()))) {
                 return;
@@ -103,7 +108,7 @@ public class AWSClient {
      * @throws ProfilingException If the file could not be accessed.
      */
     public void getFileFromBucket(String keyName, Path outputPath) throws ProfilingException {
-        S3Object o = s3.getObject(config.bucketName, keyName);
+        S3Object o = s3.getObject(bucketName, keyName);
         try (S3ObjectInputStream objectContent = o.getObjectContent(); FileOutputStream fileOutputStream = new FileOutputStream(outputPath.toFile())) {
             byte[] readBuffer = new byte[1024];
             int length = 0;
@@ -114,33 +119,4 @@ public class AWSClient {
             throw new ProfilingException("File could not be read.", e);
         }
     }
-
-}
-
-@XmlRootElement
-class AWSConfig {
-    private static final String ENDPOINT_INFO = "profiling/src/main/resources/awsEndpointInfo.json";
-
-    @Expose
-    String targetUrl;
-    @Expose
-    String apiKey;
-    @Expose
-    String bucketName;
-
-    public AWSConfig(String targetUrl, String apiKey) {
-        this.targetUrl = targetUrl;
-        this.apiKey = apiKey;
-    }
-
-    static AWSConfig getConfig() throws ProfilingException {
-        Gson parser = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-        try {
-            Reader reader = new BufferedReader(new FileReader(ENDPOINT_INFO));
-            return parser.fromJson(reader, AWSConfig.class);
-        } catch (IOException e) {
-            throw new ProfilingException("Resource limits could not be read. ", e);
-        }
-    }
-
 }
