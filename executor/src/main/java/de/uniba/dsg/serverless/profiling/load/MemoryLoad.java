@@ -13,8 +13,7 @@ public class MemoryLoad implements Runnable {
     public final long time;
     @Expose
     private final long totalMemory;
-    private byte[] usedMemory;
-    private double progress = 0;
+    private List<byte[]> usedMemory = new ArrayList<>();
 
     /**
      * @param memory memory in bytes
@@ -27,18 +26,14 @@ public class MemoryLoad implements Runnable {
 
     @Override
     public void run() {
-        //long startTime = System.currentTimeMillis();
-        //long endTime = startTime + time;
-
-
-        // TODO improve this to make it more consistent
-        //while (System.currentTimeMillis() < endTime) {
-        //double progress = (System.currentTimeMillis() - startTime) / (1. * (endTime - startTime));
-        //int newLoad = (int) ((progress - this.progress) * totalMemory);
-        byte[] load = new byte[(int) totalMemory];
-        //this.progress = progress;
-        //usedMemory.add(load);
-        Uninterruptibles.sleepUninterruptibly(time, TimeUnit.MILLISECONDS);
-        //}
+        long tick = 200L;
+        long ticks = time / tick;
+        int tickMemory = (int) (totalMemory / ticks);
+        long nextTick = System.currentTimeMillis() + tick;
+        for (int i = 0; i < ticks; i++) {
+            usedMemory.add(new byte[tickMemory]);
+            Uninterruptibles.sleepUninterruptibly(nextTick - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+            nextTick += tick;
+        }
     }
 }

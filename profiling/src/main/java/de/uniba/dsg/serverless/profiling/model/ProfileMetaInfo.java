@@ -17,6 +17,7 @@ public class ProfileMetaInfo {
     public long maxMemoryUtilization;
     public double memoryLimit;
     public double averageMemoryUtilization;
+    public double networkUsage;
 
     /**
      * Creates Profile Meta data which are parsed to json
@@ -37,6 +38,7 @@ public class ProfileMetaInfo {
             memoryLimit = profile.lastMetrics.getMetric(Metrics.MEMORY_LIMIT);
             maxMemoryUtilization = getMaxMemoryUtilization(profile);
             averageMemoryUtilization = getAverageMemoryUtilization(profile);
+            networkUsage = getNetworkUsage(profile);
         }
     }
 
@@ -81,6 +83,15 @@ public class ProfileMetaInfo {
                 .map(m -> m.getOrDefault(Metrics.MEMORY_USAGE, -1))
                 .reduce(Math::max)
                 .orElseThrow(() -> new ProfilingException("Max memory usage could not be calculated."));
+    }
+
+    private long getNetworkUsage(Profile profile) throws ProfilingException {
+        return profile.metrics
+                .stream()
+                .map(m -> m.getOrDefault(Metrics.TX_BYTES, -1))
+                .reduce(Math::addExact)
+                .orElseThrow(() -> new ProfilingException("IO Usage cannot be calculated"));
+
     }
 
 }

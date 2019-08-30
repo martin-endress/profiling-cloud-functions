@@ -18,14 +18,15 @@ available items in dict:
 
 def readCSVFile(fileName):
     """
-    returns list of dictionaries for from a csv file.  
+    returns list of dictionaries for from a csv file.
     one entry is one row in the csv
     """
     with open(fileName) as csvfile:
-        plots = csv.reader(csvfile, delimiter=',')
-        for row in plots:
-            dictionary = [{k: tryMapToInt(v) for k, v in row.items()}
-                          for row in csv.DictReader(csvfile)]
+        reader = csv.reader(csvfile, delimiter=',')
+        header = next(reader, None)
+        dictionary = []
+        for entries in reader:
+            dictionary.append(dict(zip(header, map(tryMapToInt, entries))))
     return dictionary
 
 
@@ -51,6 +52,7 @@ def getOptimal(time, delta):
 
 
 def plotFile(file, folder):
+    print(file)
     time = getEntries(file, 'stats_time')
     bytesRecieved = getDeltaEntries(file, 'rx_bytes')
     bytesSent = getDeltaEntries(file, 'tx_bytes')
@@ -64,24 +66,30 @@ def plotFile(file, folder):
 
     color = 'tab:blue'
     ax1.set_ylabel('statsCpuUsage', color=color)
-    ax1.set_ylim([0, 15E8])
+    ax1.set_ylim([0, 12E8])
     ax1.plot(time, statsCpuUsage, color=color)
     ax1.tick_params(axis='y', labelcolor=color)
 
+    time_ms = 30000
+    memSize = 1073741824
     ax2 = ax1.twinx()
     color = 'tab:red'
     ax2.set_xlabel('time (ms)')
     ax2.set_ylabel('memoryUsage', color=color)
-    #ax2.set_ylim([0, 900E6])
+    ax2.set_ylim([0, 1.2 * memSize])
     ax2.plot(time, memoryUsage, color=color)
     ax2.tick_params(axis='y', labelcolor=color)
 
+    x = numpy.linspace(0, time_ms, 2)
+    ax2.plot(x, x * (memSize / time_ms), linestyle=":", color=color, linewidth=1)
+
+    netSize = 5* 1024 * 1024
     ax3 = ax1.twinx()
     ax3.spines["right"].set_position(("axes", 1.2))
     color = 'tab:orange'
     ax3.set_ylabel('bytesRecieved', color=color)
-    #ax3.set_ylim([0, 900000])
-    #ax3.plot(time, bytesRecieved, color=color)
+    ax3.set_ylim([0, netSize])
+    ax3.plot(time, bytesRecieved, color=color)
     ax3.tick_params(axis='y', labelcolor=color)
 
     fig.tight_layout()

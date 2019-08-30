@@ -17,7 +17,6 @@ public class BenchmarkResult {
         this.max = max;
     }
 
-
     public void writeResultsToFile(Path path) throws ProfilingException {
         String resultJson = new GsonBuilder().setPrettyPrinting().create().toJson(this);
         try {

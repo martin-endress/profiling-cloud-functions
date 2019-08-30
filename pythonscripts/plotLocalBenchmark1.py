@@ -53,7 +53,7 @@ def metaPath(x):
     return '../calibration/experiment_local_' + str(round(x, 2)) + '/local.csv'
 
 
-limits = list(numpy.arange(0.25, 4.01, 0.25))
+limits = list(numpy.arange(0.25, 4.0, 0.25))
 
 averages = []
 maxs = []
@@ -87,13 +87,14 @@ pyplot.title('Local Linpack')
 print(averages)
 
 # Plot measurements
-pyplot.plot(limits, averages, 'bo')
+pyplot.plot(limits, averages, 'o', markerfacecolor='lightgray',
+            markeredgecolor='grey')
 
 # Plot regression model
-pyplot.plot(x, x*model.coef_+model.intercept_)
+pyplot.plot(x, x * model.coef_ + model.intercept_,
+            linestyle='--', color='orange')
 
 f.tight_layout()
 
 f.savefig('output.pdf')
 pyplot.show()
-

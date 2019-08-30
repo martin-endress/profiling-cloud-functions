@@ -1,0 +1,24 @@
+{
+  "experimentName": "AWSPrimaryExperiment",
+  "localCalibrationFolder": "primaryCalibration",
+  "quotas": [
+    1.5,
+    2.5
+  ],
+  "providerCalibrationFolders": [
+    "calibration/awsCalibration0",
+    "calibration/awsCalibration1",
+    "calibration/awsCalibration2",
+    "calibration/awsCalibration3",
+    "calibration/awsCalibration4",
+    "calibration/awsCalibration5",
+    "calibration/awsCalibration6",
+    "calibration/awsCalibration7",
+    "calibration/awsCalibration8",
+    "calibration/awsCalibration9",
+    "calibration/awsCalibration10",
+    "calibration/awsCalibration11",
+    "calibration/awsCalibration12",
+    "calibration/awsCalibration13"
+  ]
+}

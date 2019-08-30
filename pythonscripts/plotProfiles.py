@@ -81,6 +81,7 @@ memoryUtilization = []
 cpuUtilisation = []
 durationMS = []
 maxMemoryUtilization = []
+network = []
 
 for root, dirs, files in os.walk(path):
     for file in files:
@@ -90,11 +91,13 @@ for root, dirs, files in os.walk(path):
             cpuUtilisation.append(jsonFile['cpuUtilisation'])
             durationMS.append(jsonFile['durationMS'])
             maxMemoryUtilization.append(jsonFile['maxMemoryUtilization'])
+            network.append(jsonFile['networkUsage'])
 
 plotBoth(path, 'memoryUtilization', memoryUtilization)
 plotBoth(path, 'cpuUtilisation', cpuUtilisation)
 plotBoth(path, 'durationMS', durationMS)
 plotBoth(path, 'maxMemoryUtilization', maxMemoryUtilization)
+plotBoth(path, 'networkUsage', network)
 
 #csvFile = readCSVFile('artifacts/metrics.csv')
 # plotFile(csvFile)

@@ -1,20 +1,16 @@
 package de.uniba.dsg.serverless.calibration;
 
-import com.amazonaws.util.StringUtils;
-import com.google.gson.Gson;
 import de.uniba.dsg.serverless.profiling.model.ProfilingException;
 import de.uniba.dsg.serverless.profiling.model.ResourceLimits;
 import de.uniba.dsg.serverless.profiling.profiling.ContainerProfiling;
-import io.netty.util.internal.StringUtil;
-import org.apache.commons.lang.ArrayUtils;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,13 +22,18 @@ public class Calibration {
 
     public static final int[] MEMORY_SIZES = {128, 256, 512, 1024, 2048, 3008};
 
+    private final List<Double> quotas;
     private final Path calibrationFolder;
     private final String name;
     private final ContainerProfiling linpack;
 
-    public Calibration(String name) throws ProfilingException {
+    DecimalFormat decimalFormat = new DecimalFormat("#.###");
+
+
+    public Calibration(String name, List<Double> quotas) throws ProfilingException {
         this.name = name;
         calibrationFolder = Paths.get("calibration", name);
+        this.quotas = quotas;
         linpack = new ContainerProfiling(LINPACK_DOCKERFILE, LINPACK_IMAGE);
         try {
             Files.createDirectories(calibrationFolder);
@@ -41,35 +42,52 @@ public class Calibration {
         }
     }
 
-    public void executeLocalBenchmark(double limit) throws ProfilingException {
-        Path output = calibrationFolder.resolve("output/out.txt");
-        if (Files.exists(output)) {
+    public void executeLocalBenchmarks() throws ProfilingException {
+        if (Files.exists(calibrationFolder.resolve("results.csv"))) {
             System.out.println("Calibration already performed.");
             return;
         }
-        //linpack.buildContainer();
-        //linpack.startContainer(ResourceLimits.fromFile("limits.json"));
+        System.out.println("building Container");
+        linpack.buildContainer();
+        List<Double> results = new ArrayList<>();
+        for (double quota : quotas) {
+            System.out.println("running calibration" + quota);
+            double result = executeLocalBenchmark(quota);
+            results.add(result);
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append(quotas.stream().map(decimalFormat::format).collect(Collectors.joining(",")));
+        stringBuilder.append("\n");
+        stringBuilder.append(results.stream().map(String::valueOf).collect(Collectors.joining(",")));
+        stringBuilder.append("\n");
+
+        try {
+            Files.write(calibrationFolder.resolve("results.csv"), stringBuilder.toString().getBytes());
+        } catch (IOException e) {
+            throw new ProfilingException(e);
+        }
+
+    }
+
+    private double executeLocalBenchmark(double limit) throws ProfilingException {
         linpack.startContainer(new ResourceLimits(limit, 0));
         int statusCode = linpack.awaitTermination();
         if (statusCode != 0) {
             throw new ProfilingException("Benchmark failed. (status code = " + statusCode + ")");
         }
         linpack.getFilesFromContainer(CONTAINER_RESULT_FOLDER, calibrationFolder);
+        Path output = calibrationFolder.resolve(limit + "").resolve("out.txt");
+        try {
+            Files.move(calibrationFolder.resolve("output"), output);
+        } catch (IOException e) {
+            throw new ProfilingException(e);
+        }
         if (!Files.exists(output)) {
             throw new ProfilingException("Benchmark failed. output/out.txt does not exist.");
         }
         BenchmarkResult result = new BenchmarkParser(output).parseBenchmark();
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("average,max");
-        sb.append("\n");
-        sb.append(result.average + "," + result.max);
-        System.out.println(sb.toString());
-        try {
-            Files.write(calibrationFolder.resolve("local.csv"), sb.toString().getBytes());
-        } catch (IOException e) {
-            throw new ProfilingException(e);
-        }
+        return result.average;
     }
 
     public void executeAWSBenchmark() throws ProfilingException {

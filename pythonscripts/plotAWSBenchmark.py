@@ -50,10 +50,20 @@ def getOptimal(time, delta):
     return list(map(lambda x: x * delta, time))
 
 
-results = readCSVFile('../calibration/experiment_0/awsResults.csv')[0]
+measurements = []
 
-keys = list(results.keys())
-values = list(results.values())
+keys = []
+values = []
+
+
+for n in range(14):
+    result = readCSVFile('calibration/experiment_' +
+                         str(n) + '/awsResults.csv')[0]
+    keys.extend(list(result.keys()))
+    values.extend(list(result.values()))
+
+print(keys)
+print(values)
 
 f = pyplot.figure()
 axes = pyplot.gca()
@@ -63,12 +73,26 @@ pyplot.yticks(range(0, 36, 10))
 axes.set_xlabel('Memory in MB')
 axes.set_xlim([0, 3200])
 pyplot.title('AWS Linpack')
-pyplot.xticks(range(0, 3200, 400))
+pyplot.xticks(range(0, 3300, 400))
 
 pyplot.grid(linestyle='-')
 
-pyplot.plot(keys, values, 'ro')
-f.tight_layout()
+# Plot Measurement
+pyplot.plot(keys, values, 'o', markerfacecolor='lightgray',
+            markeredgecolor='grey')
 
+model = LinearRegression()
+shapedKeys = numpy.array(keys).reshape((-1, 1))
+model.fit(shapedKeys, values)
+
+r_sq = model.score(shapedKeys, values)
+print('coefficient of determination: ', r_sq)
+print('intercept:', model.intercept_)
+print('slope:', model.coef_)
+x = numpy.linspace(0, 4000, 3)
+# Plot regression model
+pyplot.plot(x, x * model.coef_ + model.intercept_, linestyle='--',color='orange')
+
+f.tight_layout()
 f.savefig('output.pdf')
 pyplot.show()
