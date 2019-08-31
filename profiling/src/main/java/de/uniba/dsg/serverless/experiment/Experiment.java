@@ -101,6 +101,10 @@ public class Experiment {
         for (int memory : simulatedMemory) {
             double gFlops = providerPerformanceModel.getGflops(memory);
             double quota = localPerformanceModel.estimateQuota(gFlops);
+            if (quota > 1) {
+                System.out.println("Cannot simulate memory " + memory + " using this machine. Too weak :( ...  quota=" + quota);
+                return;
+            }
             ResourceLimits limits = new ResourceLimits(quota, memory);
             System.out.println("Start profiling..  limits=" + limits.toString());
             statsRetriever.profile(loadPattern, limits, numberOfLoads);

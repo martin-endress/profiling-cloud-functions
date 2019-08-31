@@ -92,7 +92,7 @@ public class Calibration {
     }
 
     public void calibrateProvider(String targetUrl, String apiKey, String bucketName, List<Integer> memorySizes, int numberOfCalibrations) throws ProfilingException {
-        if (Files.exists(localCalibrationOutput)) {
+        if (Files.exists(providerCalibrationOutput)) {
             System.out.println("Provider calibration already performed.");
             return;
         }
