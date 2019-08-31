@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Function;
 
 public class StatsRetriever {
     private long containerStartTime = 0L;
@@ -48,12 +49,8 @@ public class StatsRetriever {
     }
 
     public void profile(Map<String, String> loadPattern, ResourceLimits limits, int numberOfProfiles) throws ProfilingException {
-        Path a = (i) -> {
-            return profileFolder.resolve(limits.getMemoryLimitInMb() + "_" + i)
-        };
-        
-        Path profilePath = profileFolder.resolve(limits.getMemoryLimitInMb() + "_" + 0);
-        if (Files.exists(profilePath)) {
+        Function<Integer, Path> profilePath = n -> profileFolder.resolve(limits.getMemoryLimitInMb() + "_" + n);
+        if (Files.exists(profilePath.apply(0))) {
             System.out.println("Profile has already been created.");
             return;
         }
@@ -64,7 +61,7 @@ public class StatsRetriever {
             loadPattern.put("MOCK_IP", serviceMock.getIpAddress());
             for (int p = 0; p < numberOfProfiles; p++) {
                 Profile profile = getProfile(loadPattern, limits);
-                profile.save(profilePath);
+                profile.save(profilePath.apply(p));
             }
         } finally {
             serviceMock.kill();
