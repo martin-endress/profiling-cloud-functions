@@ -1,8 +1,22 @@
 {
   "experimentName": "AWSPrimaryExperiment",
   "quotas": [
+    0.25,
+    0.5,
+    0.75,
+    1.0,
+    1.25,
     1.5,
-    2.5
+    1.75,
+    2.0,
+    2.25,
+    2.5,
+    2.75,
+    3.0,
+    3.25,
+    3.5,
+    3.75,
+    4.0
   ],
   "targetUrl": "https://6r69wtmag1.execute-api.eu-central-1.amazonaws.com/default/",
   "apiKey": "< replace me >",
