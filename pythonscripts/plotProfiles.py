@@ -67,7 +67,7 @@ def plotHist(path, caption, values, withDistribution):
         q95 = stats.norm.ppf(0.95, loc=mu, scale=sigma)
         q99 = stats.norm.ppf(0.99, loc=mu, scale=sigma)
         print(caption)
-        print(" 99% " + str(q95))
+        print(" 95% " + str(q95))
         print(" 99% " + str(q99))
         pyplot.axvline(x=q99)
         legend = ['Normal Distribution', 'Percentage of Executions']

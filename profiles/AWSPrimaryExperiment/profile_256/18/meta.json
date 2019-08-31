@@ -1,0 +1,71 @@
+{
+  "created": "2019-08-31T09:55:07.376256506Z",
+  "hostConfig": {
+    "blkioWeight": 0,
+    "containerIDFile": "",
+    "cpuPeriod": 100000,
+    "cpuRealtimePeriod": 0,
+    "cpuRealtimeRuntime": 0,
+    "cpuShares": 0,
+    "cpuQuota": 26440,
+    "cpusetCpus": "",
+    "cpusetMems": "",
+    "ipcMode": "private",
+    "cgroup": "",
+    "logConfig": {
+      "type": "DEFAULT",
+      "config": {}
+    },
+    "memory": 268435456,
+    "memorySwap": 536870912,
+    "memoryReservation": 0,
+    "kernelMemory": 0,
+    "networkMode": "default",
+    "oomKillDisable": false,
+    "autoRemove": false,
+    "oomScoreAdj": 0,
+    "privileged": false,
+    "publishAllPorts": false,
+    "readonlyRootfs": false,
+    "restartPolicy": {
+      "maximumRetryCount": 0,
+      "name": ""
+    },
+    "cpuCount": 0,
+    "cpuPercent": 0,
+    "ioMaximumIOps": 0,
+    "ioMaximumBandwidth": 0,
+    "pidMode": "",
+    "cgroupParent": "",
+    "volumeDriver": "",
+    "shmSize": 67108864,
+    "runtime": "runc",
+    "utSMode": "",
+    "usernsMode": "",
+    "consoleSize": [
+      0,
+      0
+    ]
+  },
+  "imageId": "sha256:9c8cb540a5c102493d65c85c762843e80ea47c77f8c2094153bf14d92e56d3c0",
+  "state": {
+    "status": "exited",
+    "running": false,
+    "paused": false,
+    "restarting": false,
+    "oomKilled": false,
+    "dead": false,
+    "pid": 0,
+    "exitCode": 0,
+    "error": "",
+    "startedAt": "2019-08-31T09:55:08.367032214Z",
+    "finishedAt": "2019-08-31T09:55:39.783215043Z"
+  },
+  "durationMS": 31416,
+  "cpuUtilisation": 0.9007522690000219,
+  "maxCpuUtilisation": 0.4497986015701668,
+  "maxMemoryUtilization": 91209728,
+  "memoryLimit": 2.68435456E8,
+  "averageMemoryUtilization": 0.21288401285807293,
+  "networkUsage": 0.0
+}
