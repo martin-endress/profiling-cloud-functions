@@ -1,0 +1,48 @@
+{
+  "experimentName": "AWSSecondaryExperiment",
+  "quotas": [
+    0.125,
+    0.25,
+    0.375,
+    0.5,
+    0.625,
+    0.75,
+    0.875,
+    1.0,
+    1.125,
+    1.25,
+    1.375,
+    1.5,
+    1.625,
+    1.75,
+    1.875,
+    2.0
+  ],
+  "targetUrl": "https://6r69wtmag1.execute-api.eu-central-1.amazonaws.com/default/",
+  "apiKey": "< replace me >",
+  "bucketName": "martin-linpack",
+  "memorySizes": [
+    128,
+    256,
+    512,
+    1024,
+    2048,
+    3008
+  ],
+  "numberOfAWSExecutions": 14,
+  "simulatedMemory": [
+    256,
+    2048
+  ],
+  "numberOfLoads": 10,
+  "loadPattern": {
+    "LOAD_TIME": "30000",
+    "CPU_FIBONACCI": "45",
+    "CPU_FROM": "",
+    "CPU_TO": "",
+    "MEMORY_TO": "67108864",
+    "IO_FROM": "",
+    "IO_TO": "",
+    "IO_SIZE": ""
+  }
+}

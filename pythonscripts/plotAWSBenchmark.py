@@ -50,21 +50,15 @@ def getOptimal(time, delta):
     return list(map(lambda x: x * delta, time))
 
 
-measurements = []
+path = str(sys.argv[1])
 
 keys = []
 values = []
 
-
-for n in range(14):
-    result = readCSVFile('calibration/awsCalibration' +
-                         str(n) + '/awsResults.csv')[0]
-    keys.extend(list(result.keys()))
-    values.extend(list(result.values()))
-
-print(keys)
-print(values)
-
+result = readCSVFile(path)
+for ex in result:
+    keys.extend(list(ex.keys()))
+    values.extend(list(ex.values()))
 
 f = pyplot.figure(figsize=(10.4,4.88))
 axes = pyplot.gca()

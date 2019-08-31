@@ -1,16 +1,25 @@
 import csv
 import matplotlib.pyplot as pyplot
 import numpy
-import json
 import os
 import sys
+from sklearn.linear_model import LinearRegression
 from imageio import imread
 
 
-def readJsonFile(fileName):
-    with open(fileName) as jsonFile:
-        data = json.load(jsonFile)
-        return data
+def readCSVFile(fileName):
+    """
+    returns list of dictionaries for from a csv file.
+    one entry is one row in the csv
+    """
+    with open(fileName) as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        header = next(reader, None)
+        dictionary = []
+        for entries in reader:
+            dictionary.append(
+                dict(zip(map(tryMapToFloat, header), map(tryMapToFloat, entries))))
+    return dictionary
 
 
 def tryMapToFloat(entry):
@@ -41,40 +50,43 @@ def getOptimal(time, delta):
     return list(map(lambda x: x * delta, time))
 
 
-def metaPath(x):
-    return '../profiles/Profile_08.21_14.43.28/profile_limit_' + str(round(x, 2)) + '/meta.json'
+path = str(sys.argv[1])
+maxQuota = int(sys.argv[2])
 
+result = readCSVFile(path)[0]
+limits = list(result.keys())
+averages = list(result.values())
 
-profileFolder = '../profiles/Profile_08.21_14.43.28'
+model = LinearRegression()
+shapedLimits = numpy.array(limits).reshape((-1, 1))
+model.fit(shapedLimits, averages)
+r_sq = model.score(shapedLimits, averages)
 
-durations = []
-limits = list(numpy.arange(0.05, 1.01, 0.05))
-
-for limit in limits:
-    fileName = metaPath(limit)
-    if not(os.path.isfile(fileName)):
-        print(fileName + ' does not exist.')
-    jsonFile = readJsonFile(fileName)
-    durations.append(jsonFile['durationMS'])
-
-print(limits)
-print(durations)
-
-# This data was fetched from docker logs and is not generally available (only for this example)
-fibonacciExecTimes = [234998, 87808, 40307, 26611, 17092, 12904, 10810, 9187,
-                      8006, 6968, 6127, 5727, 5116, 4716, 4467, 4093, 3754, 3576, 3348, 3061]
+print('coefficient of determination: ', r_sq)
+print('intercept:', model.intercept_)
+print('slope:', model.coef_)
 
 f = pyplot.figure()
+pyplot.title('Local Linpack')
 axes = pyplot.gca()
-axes.set_ylabel('execution time fibonacci benchmark')
-axes.set_xlabel('docker quota')
-axes.set_xlim([0, 1])
-pyplot.title('Docker quota')
+axes.set_ylabel('GFlops')
+axes.set_ylim([0, 180])
+pyplot.yticks(range(0, 181, 20))
 
-pyplot.plot(limits, durations)
-#pyplot.plot(limits, fibonacciExecTimes)
-#pyplot.plot(limits, numpy.subtract(durations, fibonacciExecTimes))
+axes.set_xlabel('Quota')
+axes.set_xlim([0, maxQuota])
+#pyplot.xticks(range(0, 3300, 400))
+
+# Plot measurements
+pyplot.plot(limits, averages, 'o', markerfacecolor='lightgray',
+            markeredgecolor='grey')
+
+# Plot regression model
+x = numpy.linspace(0, 5, 3)
+pyplot.plot(x, x * model.coef_ + model.intercept_,
+            linestyle='--', color='orange')
+
 f.tight_layout()
 
-# f.savefig('output.pdf')
+f.savefig('output.pdf')
 pyplot.show()
