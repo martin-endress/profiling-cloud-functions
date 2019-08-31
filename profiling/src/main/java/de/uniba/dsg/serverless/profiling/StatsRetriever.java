@@ -49,8 +49,8 @@ public class StatsRetriever {
     }
 
     public void profile(Map<String, String> loadPattern, ResourceLimits limits, int numberOfProfiles) throws ProfilingException {
-        Function<Integer, Path> profilePath = n -> profileFolder.resolve(limits.getMemoryLimitInMb() + "_" + n);
-        if (Files.exists(profilePath.apply(0))) {
+        Path profilePath = profileFolder.resolve("profile_" + limits.getMemoryLimitInMb());
+        if (Files.exists(profilePath)) {
             System.out.println("Profile has already been created.");
             return;
         }
@@ -61,7 +61,7 @@ public class StatsRetriever {
             loadPattern.put("MOCK_IP", serviceMock.getIpAddress());
             for (int p = 0; p < numberOfProfiles; p++) {
                 Profile profile = getProfile(loadPattern, limits);
-                profile.save(profilePath.apply(p));
+                profile.save(profilePath.resolve(String.valueOf(p)));
             }
         } finally {
             serviceMock.kill();

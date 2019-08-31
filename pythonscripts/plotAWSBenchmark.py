@@ -57,7 +57,7 @@ values = []
 
 
 for n in range(14):
-    result = readCSVFile('calibration/experiment_' +
+    result = readCSVFile('calibration/awsCalibration' +
                          str(n) + '/awsResults.csv')[0]
     keys.extend(list(result.keys()))
     values.extend(list(result.values()))
@@ -65,10 +65,11 @@ for n in range(14):
 print(keys)
 print(values)
 
-f = pyplot.figure()
+
+f = pyplot.figure(figsize=(10.4,4.88))
 axes = pyplot.gca()
 axes.set_ylabel('GFlops')
-axes.set_ylim([0, 40])
+axes.set_ylim([0, 36])
 pyplot.yticks(range(0, 36, 10))
 axes.set_xlabel('Memory in MB')
 axes.set_xlim([0, 3200])
@@ -76,6 +77,7 @@ pyplot.title('AWS Linpack')
 pyplot.xticks(range(0, 3300, 400))
 
 pyplot.grid(linestyle='-')
+
 
 # Plot Measurement
 pyplot.plot(keys, values, 'o', markerfacecolor='lightgray',
