@@ -9,14 +9,13 @@ public class CPULoadFibonacci implements Runnable {
 
     @Expose
     public final long fibonacci;
-    @Expose
-    public final long time;
 
     @Override
     public void run() {
+        System.out.println("starting fib");
         long startTime = System.currentTimeMillis();
         fibonacci(fibonacci);
-        System.out.println("took " + (System.currentTimeMillis() - startTime) + "ms");
+        System.out.println("Fibonacci Load took " + (System.currentTimeMillis() - startTime) + "ms");
     }
 
     private long fibonacci(long n) {
@@ -33,16 +32,9 @@ public class CPULoadFibonacci implements Runnable {
      * Example: <code>CPULoad(0.5,1.0,10_000)</code> will create a load which goes from 50% CPU usage to 100% linearly in 10 seconds.
      *
      * @param fibonacci input to load simulation
-     * @param time      total running time
      */
-    public CPULoadFibonacci(int fibonacci, long time) {
+    public CPULoadFibonacci(int fibonacci) {
         this.fibonacci = fibonacci;
-        this.time = time;
-    }
-
-    public static CPULoadFibonacci fromMap(Map<String, String> map) {
-        final ObjectMapper mapper = new ObjectMapper();
-        return mapper.convertValue(map, CPULoadFibonacci.class);
     }
 
 }

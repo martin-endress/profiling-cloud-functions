@@ -9,7 +9,7 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            Experiment experiment = Experiment.fromFile("AWSPrimaryExperiment.json");
+            Experiment experiment = Experiment.fromFile("AWSSecondaryExperiment2.json");
             experiment.calibrate();
             experiment.profile();
         } catch (ProfilingException e) {

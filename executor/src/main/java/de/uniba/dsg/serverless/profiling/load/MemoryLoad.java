@@ -35,5 +35,6 @@ public class MemoryLoad implements Runnable {
             Uninterruptibles.sleepUninterruptibly(nextTick - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
             nextTick += tick;
         }
+        System.out.println("done simulating memory load");
     }
 }

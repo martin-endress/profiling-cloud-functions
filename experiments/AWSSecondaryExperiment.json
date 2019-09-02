@@ -34,7 +34,7 @@
     256,
     2048
   ],
-  "numberOfLoads": 10,
+  "numberOfLoads": 100,
   "loadPattern": {
     "LOAD_TIME": "30000",
     "CPU_FIBONACCI": "45",

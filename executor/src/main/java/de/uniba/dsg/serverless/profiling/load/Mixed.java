@@ -78,7 +78,7 @@ public class Mixed {
     private Optional<CPULoadFibonacci> getCpuLoadFibonacci() {
         try {
             int fibonacci = Integer.valueOf(System.getenv("CPU_FIBONACCI"));
-            return Optional.of(new CPULoadFibonacci(fibonacci, loadTime));
+            return Optional.of(new CPULoadFibonacci(fibonacci));
         } catch (NullPointerException | NumberFormatException e) {
             return Optional.empty();
         }
