@@ -54,7 +54,11 @@ public class StatsRetriever {
             System.out.println("Profile has already been created.");
             return;
         }
-
+        System.out.println("loadPattern");
+        for (String s : loadPattern.keySet()) {
+            System.out.println(s);
+            System.out.println(loadPattern.get(s));
+        }
         loadPattern.put("MOCK_PORT", "9000");
         try {
             serviceMock.startContainer(loadPattern);
