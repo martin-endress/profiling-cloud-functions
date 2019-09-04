@@ -76,6 +76,8 @@ public class Experiment {
         try {
             Reader reader = new BufferedReader(new FileReader(EXPERIMENTS_FOLDER.resolve(fileName).toString()));
             experiment = PARSER.fromJson(reader, Experiment.class);
+            experiment.providerPerformanceModel = ProviderPerformanceModel.withFixedGflops(0.0);
+            experiment.localPerformanceModel = LocalPerformanceModel.withFixedLimit(0.0);
         } catch (IOException e) {
             throw new ProfilingException("File does not exist or is corrupt.", e);
         }
@@ -83,6 +85,13 @@ public class Experiment {
         return experiment;
     }
 
+    /**
+     * Runs local and provider benchmark to find mapping between provider and local machine.
+     * The calibration will be skipped, if it has already been performed.
+     * If no calibration takes place, the local model will always return 0.0 (no limit).
+     *
+     * @throws ProfilingException
+     */
     public void calibrate() throws ProfilingException {
         System.out.println("Starting Calibration");
         calibration.calibrateLocal(quotas);
@@ -97,7 +106,11 @@ public class Experiment {
     }
 
     public void profile() throws ProfilingException {
-        StatsRetriever statsRetriever = new StatsRetriever(experimentName, false);
+        profile(true);
+    }
+
+    public void profile(boolean withBuild) throws ProfilingException {
+        StatsRetriever statsRetriever = new StatsRetriever(experimentName, withBuild);
         for (int memory : simulatedMemory) {
             double gFlops = providerPerformanceModel.getGflops(memory);
             double quota = localPerformanceModel.estimateQuota(gFlops);

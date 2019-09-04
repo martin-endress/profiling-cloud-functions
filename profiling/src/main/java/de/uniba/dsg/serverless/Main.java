@@ -10,8 +10,8 @@ public class Main {
     public static void main(String[] args) {
         try {
             Experiment experiment = Experiment.fromFile("AWSSecondaryExperiment2.json");
-            experiment.calibrate();
-            experiment.profile();
+            //experiment.calibrate();
+            experiment.profile(false);
         } catch (ProfilingException e) {
             System.err.println(e.getMessage());
             Optional.ofNullable(e.getCause())

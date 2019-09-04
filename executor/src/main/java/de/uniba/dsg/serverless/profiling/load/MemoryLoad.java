@@ -3,8 +3,8 @@ package de.uniba.dsg.serverless.profiling.load;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.gson.annotations.Expose;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
 public class MemoryLoad implements Runnable {
@@ -13,7 +13,7 @@ public class MemoryLoad implements Runnable {
     public final long time;
     @Expose
     private final long totalMemory;
-    private List<byte[]> usedMemory = new ArrayList<>();
+    private List<byte[]> usedMemory = new Vector<>(1,1);
 
     /**
      * @param memory memory in bytes

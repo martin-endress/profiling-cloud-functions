@@ -15,13 +15,22 @@ import java.util.List;
 public class ProviderPerformanceModel {
     private SimpleRegression regression;
 
-    public ProviderPerformanceModel() {
+    private ProviderPerformanceModel() {
         regression = new SimpleRegression();
     }
 
     public ProviderPerformanceModel(Path providerCalibration) throws ProfilingException {
         regression = new SimpleRegression();
         addProviderCalibration(providerCalibration);
+    }
+
+    public static ProviderPerformanceModel withFixedGflops(double gflops) {
+        return new ProviderPerformanceModel() {
+            @Override
+            public double getGflops(int memory) {
+                return gflops;
+            }
+        };
     }
 
     /**

@@ -17,6 +17,9 @@ public class LocalPerformanceModel {
 
     private SimpleRegression regression = new SimpleRegression();
 
+    private LocalPerformanceModel() {
+    }
+
     /**
      * Creates a LocalPerformanceModel
      *
@@ -38,6 +41,15 @@ public class LocalPerformanceModel {
         } catch (IOException e) {
             throw new ProfilingException();
         }
+    }
+
+    public static LocalPerformanceModel withFixedLimit(double limit) {
+        return new LocalPerformanceModel() {
+            @Override
+            public double estimateQuota(double gFlops) {
+                return limit;
+            }
+        };
     }
 
     /**
