@@ -1,5 +1,5 @@
 {
-  "experimentName": "AWSPrimaryExperiment",
+  "experimentName": "AWSPrimaryExperiment2",
   "quotas": [
     0.25,
     0.5,
@@ -36,11 +36,11 @@
   ],
   "numberOfLoads": 100,
   "loadPattern": {
-    "LOAD_TIME": "30000",
+    "LOAD_TIME": "3000",
     "CPU_FIBONACCI": "45",
     "CPU_FROM": "",
     "CPU_TO": "",
-    "MEMORY_TO": "67108864",
+    "MEMORY_TO": "",
     "IO_FROM": "",
     "IO_TO": "",
     "IO_SIZE": ""
