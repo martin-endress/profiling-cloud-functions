@@ -102,8 +102,9 @@ public class Calibration {
 
         AWSClient client = new AWSClient(targetUrl, apiKey, bucketName);
         for (int i = 0; i < numberOfCalibrations; i++) {
-            List<Double> results = executeProviderCalibration(client, memorySizes);
-            sb.append(results.stream().map(String::valueOf).collect(Collectors.joining(",")));
+            List<BenchmarkResult> results = executeProviderCalibration(i, client, memorySizes);
+            sb.append(results.stream().map(r -> String.valueOf(r.average)).collect(Collectors.joining(",")));
+            sb.append("\n");
         }
         try {
             Files.write(providerCalibrationOutput, sb.toString().getBytes());
@@ -113,17 +114,17 @@ public class Calibration {
     }
 
     // While using a map would be more clean, the guaranteed order of a List is enough in this case. -> makes serialisation easier :)
-    private List<Double> executeProviderCalibration(AWSClient client, List<Integer> memorySizes) throws ProfilingException {
+    private List<BenchmarkResult> executeProviderCalibration(int i, AWSClient client, List<Integer> memorySizes) throws ProfilingException {
         for (int memory : memorySizes) {
-            client.invokeBenchmarkFunctions(memory, name);
+            client.invokeBenchmarkFunctions(memory, name + i);
         }
-        List<Double> results = new ArrayList<>();
+        List<BenchmarkResult> results = new ArrayList<>();
         for (int memory : memorySizes) {
-            Path out = calibrationFolder.resolve(memory + ".csv");
-            String keyName = "linpack/" + memory + "/" + name;
+            Path out = calibrationFolder.resolve(memory + "_" + i + ".csv");
+            String keyName = "linpack/" + memory + "/" + (name + i);
             client.waitForBucketObject(keyName, 600);
             client.getFileFromBucket(keyName, out);
-            results.add(new BenchmarkParser(out).parseBenchmark().average);
+            results.add(new BenchmarkParser(out).parseBenchmark());
         }
         return results;
     }

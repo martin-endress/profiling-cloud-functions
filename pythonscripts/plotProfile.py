@@ -71,7 +71,7 @@ def plotFile(file, folder):
     ax1.tick_params(axis='y', labelcolor=color)
 
     time_ms = 30000
-    memSize = 1073741824
+    memSize = 1024 * 1024 * 1024
     ax2 = ax1.twinx()
     color = 'tab:red'
     ax2.set_xlabel('time (ms)')

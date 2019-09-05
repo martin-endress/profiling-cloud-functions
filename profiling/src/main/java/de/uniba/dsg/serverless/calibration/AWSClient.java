@@ -95,6 +95,7 @@ public class AWSClient {
             if (objects.stream().anyMatch(a -> keyName.equals(a.getKey()))) {
                 return;
             }
+            System.out.println("bucket not ready");
             Uninterruptibles.sleepUninterruptibly(5, TimeUnit.SECONDS);
         }
         throw new ProfilingException("Timeout exceeded, no object found.");

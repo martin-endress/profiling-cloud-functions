@@ -9,10 +9,17 @@ import java.nio.file.Path;
 
 public class BenchmarkResult {
 
+    public String btime;
+    public String model;
+    public String modelName;
+
     public double average;
     public double max;
 
-    public BenchmarkResult(double average, double max) {
+    public BenchmarkResult(String btime, String model, String modelName, double average, double max) {
+        this.btime = btime;
+        this.model = model;
+        this.modelName = modelName;
         this.average = average;
         this.max = max;
     }

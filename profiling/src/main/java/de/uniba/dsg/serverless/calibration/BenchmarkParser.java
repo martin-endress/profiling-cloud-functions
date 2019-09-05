@@ -23,9 +23,12 @@ public class BenchmarkParser {
         }
         try {
             List<String> lines = Files.readAllLines(benchmarkPath);
+            String btime = lines.get(0).substring("btime ".length());
+            String model = lines.get(2).substring("model\t\t: ".length());
+            String modelName = lines.get(3).substring("model name\t: ".length());
             String result = lines.get(lines.size() - 7);
             String[] parts = result.split("\\s+");
-            return new BenchmarkResult(Double.parseDouble(parts[3]), Double.parseDouble(parts[4]));
+            return new BenchmarkResult(btime, model, modelName, Double.parseDouble(parts[3]), Double.parseDouble(parts[4]));
         } catch (IOException e) {
             throw new ProfilingException("Could not read file. ", e);
         }
