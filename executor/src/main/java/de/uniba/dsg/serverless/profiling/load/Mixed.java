@@ -1,14 +1,19 @@
 package de.uniba.dsg.serverless.profiling.load;
 
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.google.common.util.concurrent.Uninterruptibles;
 import de.uniba.dsg.serverless.profiling.executor.ProfilingException;
+import org.glassfish.jersey.client.ClientConfig;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class Mixed {
+public class Mixed implements RequestHandler<LoadInput, LoadResponse> {
 
     private Optional<CPULoad> cpuLoad;
     private Optional<CPULoadFibonacci> cpuLoadFibonacci;
@@ -16,6 +21,15 @@ public class Mixed {
     private Optional<IOLoad> ioLoad;
 
     private long loadTime;
+
+    @Override
+    public LoadResponse handleRequest(LoadInput input, Context context) {
+        System.out.println(input.n);
+        int fib = Integer.parseInt(input.n);
+        cpuLoadFibonacci = Optional.of(new CPULoadFibonacci(fib));
+        simulateLoad();
+        return new LoadResponse();
+    }
 
     public Mixed() throws ProfilingException {
         loadTime = getLoadTime();
@@ -27,7 +41,7 @@ public class Mixed {
 
     private long getLoadTime() {
         String loadTime = System.getenv("LOAD_TIME");
-        if (loadTime!=null) {
+        if (loadTime != null) {
             try {
                 return Long.parseLong(loadTime);
             } catch (NumberFormatException e) {
