@@ -8,6 +8,7 @@ import org.glassfish.jersey.client.ClientConfig;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,11 +25,11 @@ public class Mixed implements RequestHandler<LoadInput, LoadResponse> {
 
     @Override
     public LoadResponse handleRequest(LoadInput input, Context context) {
-        System.out.println(input.n);
-        int fib = Integer.parseInt(input.n);
-        cpuLoadFibonacci = Optional.of(new CPULoadFibonacci(fib));
+        cpuLoadFibonacci = Optional.of(new CPULoadFibonacci(input.load));
         simulateLoad();
-        return new LoadResponse();
+        simulateLoad();
+        LoadResponse response = new LoadResponse();
+        return response;
     }
 
     public Mixed() throws ProfilingException {

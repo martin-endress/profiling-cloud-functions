@@ -12,6 +12,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Calibration {
 
@@ -44,7 +45,7 @@ public class Calibration {
         }
     }
 
-    public void calibrateLocal(List<Double> quotas) throws ProfilingException {
+    public void calibrateLocal(int maxQuota) throws ProfilingException {
         if (Files.exists(localCalibrationOutput)) {
             System.out.println("Local calibration already performed.");
             return;
@@ -52,9 +53,10 @@ public class Calibration {
         System.out.println("building Container");
         linpack.buildContainer();
         List<Double> results = new ArrayList<>();
+        List<Double> quotas = IntStream.range(1, maxQuota * 10).mapToDouble(v -> 0.1 * v).boxed().collect(Collectors.toList());
         for (double quota : quotas) {
             System.out.println("running calibration" + quota);
-            double result = executeLocalBenchmark(quota);
+            double result = executeLocalBenchmark(quota, maxQuota);
             results.add(result);
         }
         StringBuilder stringBuilder = new StringBuilder();
@@ -71,8 +73,9 @@ public class Calibration {
         }
     }
 
-    private double executeLocalBenchmark(double limit) throws ProfilingException {
-        linpack.startContainer(new ResourceLimits(limit, 0));
+    private double executeLocalBenchmark(double limit, int maxQuota) throws ProfilingException {
+        int cpuPin = maxQuota - 1;
+        linpack.startContainer(new ResourceLimits(limit, cpuPin, 0));
         int statusCode = linpack.awaitTermination();
         if (statusCode != 0) {
             throw new ProfilingException("Benchmark failed. (status code = " + statusCode + ")");
@@ -120,13 +123,17 @@ public class Calibration {
         }
         List<BenchmarkResult> results = new ArrayList<>();
         for (int memory : memorySizes) {
-            Path out = calibrationFolder.resolve(memory + "_" + i + ".csv");
-            String keyName = "linpack/" + memory + "/" + (name + i);
-            client.waitForBucketObject(keyName, 600);
-            client.getFileFromBucket(keyName, out);
-            results.add(new BenchmarkParser(out).parseBenchmark());
+            results.add(getBenchmark(client, memory + "_aff"));
         }
         return results;
+    }
+
+    private BenchmarkResult getBenchmark(AWSClient client, String fileName) throws ProfilingException {
+        Path out = calibrationFolder.resolve(fileName);
+        String keyName = "linpack_aff/" + fileName;
+        client.waitForBucketObject(keyName, 600);
+        client.getFileFromBucket(keyName, out);
+        return new BenchmarkParser(out).parseBenchmark();
     }
 }
 

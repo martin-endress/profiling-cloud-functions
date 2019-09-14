@@ -94,7 +94,7 @@ public class Experiment {
      */
     public void calibrate() throws ProfilingException {
         System.out.println("Starting Calibration");
-        calibration.calibrateLocal(quotas);
+        calibration.calibrateLocal(1);
         calibration.calibrateProvider(targetUrl, apiKey, bucketName, memorySizes, numberOfAWSExecutions);
 
         localPerformanceModel = new LocalPerformanceModel(calibration.localCalibrationOutput);
@@ -118,7 +118,7 @@ public class Experiment {
                 System.out.println("Cannot simulate memory " + memory + " using this machine. Too weak :( ...  quota=" + quota);
                 return;
             }
-            ResourceLimits limits = new ResourceLimits(quota, memory);
+            ResourceLimits limits = new ResourceLimits(quota, 1, memory);
             System.out.println("Start profiling..  limits=" + limits.toString());
             statsRetriever.profile(loadPattern, limits, numberOfLoads);
         }

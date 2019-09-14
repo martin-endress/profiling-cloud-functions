@@ -19,7 +19,9 @@ import org.glassfish.jersey.client.ClientProperties;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.*;
@@ -53,8 +55,7 @@ public class AWSClient {
         // Avoid AWS Gateway Timeout by using local timeout of 1s
         configuration = configuration.property(ClientProperties.CONNECT_TIMEOUT, 1000);
         configuration = configuration.property(ClientProperties.READ_TIMEOUT, 1000);
-        Client client = ClientBuilder.newClient(configuration);
-        lambdaTarget = client.target(targetUrl);
+        lambdaTarget = ClientBuilder.newClient(configuration).target(targetUrl);
         this.bucketName = bucketName;
         this.apiKey = apiKey;
     }
@@ -66,10 +67,9 @@ public class AWSClient {
      * @throws ProfilingException if the response code is not 200
      */
     public void invokeBenchmarkFunctions(int memory, String folderName) throws ProfilingException {
-        String path = "/linpack_" + memory;
+        String path = "linpack_affinity_" + memory;
         try {
             lambdaTarget.path(path)
-                    .queryParam("experiment", folderName)
                     .request()
                     .header("x-api-key", apiKey)
                     .get();
@@ -87,15 +87,13 @@ public class AWSClient {
      * @throws ProfilingException thrown if the S3 bucket is not available or the timeout is exceeded.
      */
     public void waitForBucketObject(String keyName, long timeout) throws ProfilingException {
+        System.out.println("waiting for \"" + keyName + "\"");
         timeout = timeout * 1_000; // convert to ms
         long startTime = System.currentTimeMillis();
         while (System.currentTimeMillis() < startTime + timeout) {
-            ListObjectsV2Result result = s3.listObjectsV2(bucketName);
-            List<S3ObjectSummary> objects = result.getObjectSummaries();
-            if (objects.stream().anyMatch(a -> keyName.equals(a.getKey()))) {
+            if (s3.doesObjectExist(bucketName, keyName)) {
                 return;
             }
-            System.out.println("bucket not ready");
             Uninterruptibles.sleepUninterruptibly(5, TimeUnit.SECONDS);
         }
         throw new ProfilingException("Timeout exceeded, no object found.");

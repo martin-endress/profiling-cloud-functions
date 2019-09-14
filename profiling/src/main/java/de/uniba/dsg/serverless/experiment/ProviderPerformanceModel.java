@@ -39,7 +39,7 @@ public class ProviderPerformanceModel {
      * @param providerCalibration Path to the provider calibration CSV file
      * @throws ProfilingException when the file is not well formed.
      */
-    public void addProviderCalibration(Path providerCalibration) throws ProfilingException {
+    private void addProviderCalibration(Path providerCalibration) throws ProfilingException {
         try {
             Reader reader = Files.newBufferedReader(providerCalibration);
             CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());

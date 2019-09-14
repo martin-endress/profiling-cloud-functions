@@ -131,6 +131,9 @@ public class ContainerProfiling {
         if (limits.memoryLimit > 0L) {
             config.withMemory(limits.memoryLimit);
         }
+        if (limits.pinCPU > 0) {
+            config.withCpusetCpus("0-" + limits.pinCPU);
+        }
         return config;
 
     }
@@ -172,7 +175,7 @@ public class ContainerProfiling {
         Optional<Statistics> nextRead = getNextStatistics();
         while (nextRead.isPresent()) {
             Statistics next = nextRead.get();
-            System.out.println(next.getRead());
+            //System.out.println(next.getRead());
             statistics.add(next);
             nextRead = getNextStatistics();
         }
