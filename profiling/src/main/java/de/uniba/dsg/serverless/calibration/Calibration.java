@@ -53,11 +53,10 @@ public class Calibration {
         System.out.println("building Container");
         linpack.buildContainer();
         List<Double> results = new ArrayList<>();
-        List<Double> quotas = IntStream.range(1, maxQuota * 10).mapToDouble(v -> 0.1 * v).boxed().collect(Collectors.toList());
+        List<Double> quotas = IntStream.range(1, 1 + maxQuota * 10).mapToDouble(v -> 0.1 * v).boxed().collect(Collectors.toList());
         for (double quota : quotas) {
             System.out.println("running calibration" + quota);
-            double result = executeLocalBenchmark(quota, maxQuota);
-            results.add(result);
+            results.add(executeLocalBenchmark(quota, maxQuota));
         }
         StringBuilder stringBuilder = new StringBuilder();
 

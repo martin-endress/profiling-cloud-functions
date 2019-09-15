@@ -3,13 +3,14 @@ package de.uniba.dsg.serverless.profiling.load;
 // TODO extend to include every load
 
 public class LoadInput {
-    public String n;
+    public int load;
 
-    public void setN(String n) {
-        this.n = n;
+
+    public void setLoad(int load) {
+        this.load = load;
     }
 
-    public String getN() {
-        return n;
+    public int getLoad() {
+        return load;
     }
 }
