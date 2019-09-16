@@ -56,7 +56,7 @@ public class Calibration {
         List<Double> quotas = IntStream.range(1, 1 + maxQuota * 10).mapToDouble(v -> 0.1 * v).boxed().collect(Collectors.toList());
         for (double quota : quotas) {
             System.out.println("running calibration" + quota);
-            results.add(executeLocalBenchmark(quota, maxQuota));
+            results.add(executeLocalBenchmark(quota));
         }
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -72,9 +72,8 @@ public class Calibration {
         }
     }
 
-    private double executeLocalBenchmark(double limit, int maxQuota) throws ProfilingException {
-        int cpuPin = maxQuota - 1;
-        linpack.startContainer(new ResourceLimits(limit, cpuPin, 0));
+    private double executeLocalBenchmark(double limit) throws ProfilingException {
+        linpack.startContainer(new ResourceLimits(limit, true, 0));
         int statusCode = linpack.awaitTermination();
         if (statusCode != 0) {
             throw new ProfilingException("Benchmark failed. (status code = " + statusCode + ")");

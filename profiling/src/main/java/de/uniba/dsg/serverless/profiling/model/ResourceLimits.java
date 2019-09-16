@@ -14,7 +14,7 @@ public class ResourceLimits {
 
     public final double cpuLimit;
     public final long memoryLimit;
-    public final int pinCPU;
+    public final boolean pinCPU;
 
     public static final Path FOLDER = Paths.get("profiling", "src", "main", "resources");
 
@@ -25,7 +25,7 @@ public class ResourceLimits {
      * @param cpuLimit    cpu Quota
      * @param memoryLimit memory limit
      */
-    public ResourceLimits(double cpuLimit, int pinCPU, long memoryLimit) {
+    public ResourceLimits(double cpuLimit, boolean pinCPU, long memoryLimit) {
         this(cpuLimit, pinCPU, memoryLimit, MemoryUnit.MB);
     }
 
@@ -36,14 +36,14 @@ public class ResourceLimits {
      * @param memoryLimit memory limit
      * @param unit        memory unit
      */
-    public ResourceLimits(double cpuLimit, int pinCPU, long memoryLimit, MemoryUnit unit) {
+    public ResourceLimits(double cpuLimit, boolean pinCPU, long memoryLimit, MemoryUnit unit) {
         this.pinCPU = pinCPU;
         this.cpuLimit = cpuLimit;
         this.memoryLimit = unit.toBytes(memoryLimit);
     }
 
     public static ResourceLimits unlimited() {
-        return new ResourceLimits(0.0, -1, 0L);
+        return new ResourceLimits(0.0, false, 0L);
     }
 
     public static ResourceLimits fromFile(String fileName) throws ProfilingException {

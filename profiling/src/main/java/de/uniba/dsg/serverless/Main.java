@@ -8,16 +8,14 @@ import java.util.Optional;
 public class Main {
 
     public static void main(String[] args) {
-        //runExperiment("AWSPrimaryExperiment3.json");
-        runExperiment("AWSPrimaryExperiment4.json");
-        //runExperiment("AWSPrimaryExperiment5.json");
+        runExperiment("AWSPrimaryExperiment7.json");
     }
 
     public static void runExperiment(String ex) {
         try {
             Experiment experiment = Experiment.fromFile(ex);
             experiment.calibrate();
-            //experiment.profile();
+            experiment.profile();
         } catch (ProfilingException e) {
             System.err.println(e.getMessage());
             Optional.ofNullable(e.getCause())

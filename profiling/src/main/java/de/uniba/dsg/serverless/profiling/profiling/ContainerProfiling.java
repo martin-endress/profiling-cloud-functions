@@ -131,8 +131,8 @@ public class ContainerProfiling {
         if (limits.memoryLimit > 0L) {
             config.withMemory(limits.memoryLimit);
         }
-        if (limits.pinCPU > 0) {
-            config.withCpusetCpus("0-" + limits.pinCPU);
+        if (limits.pinCPU) {
+            config.withCpusetCpus("0");
         }
         return config;
 

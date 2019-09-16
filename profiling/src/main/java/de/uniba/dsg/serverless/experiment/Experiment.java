@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -118,7 +117,7 @@ public class Experiment {
                 System.out.println("Cannot simulate memory " + memory + " using this machine. Too weak :( ...  quota=" + quota);
                 return;
             }
-            ResourceLimits limits = new ResourceLimits(quota, 1, memory);
+            ResourceLimits limits = new ResourceLimits(quota, true, memory);
             System.out.println("Start profiling..  limits=" + limits.toString());
             statsRetriever.profile(loadPattern, limits, numberOfLoads);
         }

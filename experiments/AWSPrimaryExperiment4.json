@@ -4,35 +4,23 @@
     0.25,
     0.5,
     0.75,
-    1.0,
-    1.25,
-    1.5,
-    1.75,
-    2.0,
-    2.25,
-    2.5,
-    2.75,
-    3.0,
-    3.25,
-    3.5,
-    3.75,
-    4.0
+    1.0
   ],
-  "targetUrl": "https://6r69wtmag1.execute-api.eu-central-1.amazonaws.com/default/",
-  "apiKey": "< replace me >",
-  "bucketName": "martin-linpack",
+  "targetUrl": "https://kgcqf46o17.execute-api.eu-central-1.amazonaws.com/default/",
+  "apiKey": "<apikey>",
+  "bucketName": "calibration-linpack",
   "memorySizes": [
-    128,256,512,768,1024,1280,1536,1792,2048,2304,2560,2816,3008
-  ],
-  "numberOfAWSExecutions": 75,
+  256,512,768,1024,1280,1536,1792,2048,2304,2560,2816,3008
+],
+  "numberOfAWSExecutions": 1,
   "simulatedMemory": [
     256,
     2048
   ],
-  "numberOfLoads": 105,
+  "numberOfLoads": 1,
   "loadPattern": {
     "LOAD_TIME": "3000",
-    "CPU_FIBONACCI": "45",
+    "CPU_FIBONACCI": "47",
     "CPU_FROM": "",
     "CPU_TO": "",
     "MEMORY_TO": "",
