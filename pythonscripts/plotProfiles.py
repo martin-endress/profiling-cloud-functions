@@ -47,21 +47,22 @@ def getOptimal(time, delta):
 
 
 def plotHist(path, caption, values):
-    values = list(map(lambda x: x*100, values))
+    values = list(map(lambda x: x / 1048576, values))
+    values = list(filter(lambda x: x < 22, values))
     print(caption)
     print(values)
     f = pyplot.figure()
     pyplot.ylabel('Number of Executions')
     pyplot.yticks(numpy.arange(0, 50, step=5))
-    pyplot.xlabel(caption + " (%)")
-    pyplot.xticks(numpy.arange(0, 200, step=0.5))
+    pyplot.xlabel(caption + " (MB)")
+    pyplot.xticks(numpy.arange(0, 200, step=0.1))
     pyplot.grid(True, alpha=0.3)
     mu, sigma = stats.norm.fit(values)
 
     count, bins, ignored = pyplot.hist(values,
-                                       facecolor='g', bins=11)
+                                       facecolor='g', bins=10)
     x = numpy.linspace(mu - 3 * sigma, mu + 3 * sigma, 100)
-    pyplot.plot(x, 48 * stats.norm.pdf((x - mu) / sigma))
+    pyplot.plot(x, 41 * stats.norm.pdf((x - mu) / sigma))
 
     q95 = stats.norm.ppf(0.95, loc=mu, scale=sigma)
     print(" 95% " + str(q95))
@@ -95,9 +96,9 @@ for root, dirs, files in os.walk(path):
             maxMemoryUtilization.append(jsonFile['maxMemoryUtilization'])
             network.append(jsonFile['networkUsage'])
 
-plotHist(path, 'memoryUtilization', memoryUtilization)
-plotHist(path, 'cpuUtilisation', cpuUtilisation)
-plotHist(path, 'duration', durationMS)
+plotHist(path, 'memoryUtilization', maxMemoryUtilization)
+#plotHist(path, 'cpuUtilisation', cpuUtilisation)
+#plotHist(path, 'duration', durationMS)
 
 # csvFile = readCSVFile('artifacts/metrics.csv')
 # plotFile(csvFile)
