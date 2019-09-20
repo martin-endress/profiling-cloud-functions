@@ -47,29 +47,30 @@ def getOptimal(time, delta):
 
 
 def plotHist(path, caption, values):
-    values = list(map(lambda x: x/1000, values))
+    values = list(map(lambda x: x*100, values))
     print(caption)
+    print(values)
     f = pyplot.figure()
-    pyplot.yticks(numpy.arange(0, 22, step=5))
-    pyplot.xlabel(caption+ " (s)")
     pyplot.ylabel('Number of Executions')
-    pyplot.grid(True,alpha=0.3)
+    pyplot.yticks(numpy.arange(0, 50, step=5))
+    pyplot.xlabel(caption + " (%)")
+    pyplot.xticks(numpy.arange(0, 200, step=0.5))
+    pyplot.grid(True, alpha=0.3)
     mu, sigma = stats.norm.fit(values)
 
-
     count, bins, ignored = pyplot.hist(values,
-                                       facecolor='g', bins=12)
+                                       facecolor='g', bins=11)
     x = numpy.linspace(mu - 3 * sigma, mu + 3 * sigma, 100)
-    pyplot.plot(x, 42 * stats.norm.pdf((x - mu) / sigma))
+    pyplot.plot(x, 48 * stats.norm.pdf((x - mu) / sigma))
 
     q95 = stats.norm.ppf(0.95, loc=mu, scale=sigma)
     print(" 95% " + str(q95))
     q99 = stats.norm.ppf(0.99, loc=mu, scale=sigma)
     print(" 99% " + str(q99))
-    #pyplot.axvline(x=q99)
+    pyplot.axvline(x=q99)
 
     #legend = ['Normal Distribution', 'Percentage of Executions']
-    #pyplot.legend(legend)
+    # pyplot.legend(legend)
     # pyplot.show()
     fileName = path + caption + ".pdf"
     f.savefig(fileName)
