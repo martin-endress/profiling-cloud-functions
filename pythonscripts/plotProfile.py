@@ -66,6 +66,7 @@ def plotFile(file, folder):
 
     color = 'tab:blue'
     ax1.set_ylabel('statsCpuUsage', color=color)
+    ax1.set_xlabel('time (ms)')
     ax1.set_ylim([0, 12E8])
     ax1.plot(time, statsCpuUsage, color=color)
     ax1.tick_params(axis='y', labelcolor=color)
@@ -74,23 +75,26 @@ def plotFile(file, folder):
     memSize = 1024 * 1024 * 1024
     ax2 = ax1.twinx()
     color = 'tab:red'
-    ax2.set_xlabel('time (ms)')
     ax2.set_ylabel('memoryUsage', color=color)
     ax2.set_ylim([0, 1.2 * memSize])
     ax2.plot(time, memoryUsage, color=color)
     ax2.tick_params(axis='y', labelcolor=color)
 
     x = numpy.linspace(0, time_ms, 2)
-    ax2.plot(x, x * (memSize / time_ms), linestyle=":", color=color, linewidth=1)
+    ax2.plot(x, x * (memSize / time_ms), linestyle=":", color='tab:blue', linewidth=1)
+    #ax2.plot(x, x * (memSize / time_ms), ':',
+    #         dashes=(1.1, 2.5), color='tab:blue', linewidth=1)
+    #ax2.plot(x, x * (memSize / time_ms), ':',
+    #         dashes=(1, 2), color='tab:red', linewidth=1)
 
-    netSize = 5* 1024 * 1024
-    ax3 = ax1.twinx()
-    ax3.spines["right"].set_position(("axes", 1.2))
-    color = 'tab:orange'
-    ax3.set_ylabel('bytesRecieved', color=color)
-    ax3.set_ylim([0, netSize])
-    ax3.plot(time, bytesRecieved, color=color)
-    ax3.tick_params(axis='y', labelcolor=color)
+    #netSize = 5* 1024 * 1024
+    #ax3 = ax1.twinx()
+    #ax3.spines["right"].set_position(("axes", 1.2))
+    #color = 'tab:orange'
+    #ax3.set_ylabel('bytesRecieved', color=color)
+    #ax3.set_ylim([0, netSize])
+    #ax3.plot(time, bytesRecieved, color=color)
+    #ax3.tick_params(axis='y', labelcolor=color)
 
     fig.tight_layout()
     fig.savefig(folder+'/output.pdf')

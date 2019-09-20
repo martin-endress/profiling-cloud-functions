@@ -57,7 +57,7 @@ result = readCSVFile(path)[0]
 limits = list(result.keys())
 averages = list(result.values())
 
-model = LinearRegression()
+model = LinearRegression(fit_intercept=False)
 shapedLimits = numpy.array(limits).reshape((-1, 1))
 model.fit(shapedLimits, averages)
 r_sq = model.score(shapedLimits, averages)

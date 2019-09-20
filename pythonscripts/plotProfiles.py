@@ -46,37 +46,32 @@ def getOptimal(time, delta):
     return list(map(lambda x: x * delta, time))
 
 
-def plotBoth(path, caption, values):
-    plotHist(path, caption, values, False)
-    plotHist(path, caption, values, True)
-
-
-def plotHist(path, caption, values, withDistribution):
+def plotHist(path, caption, values):
+    values = list(map(lambda x: x/1000, values))
+    print(caption)
     f = pyplot.figure()
-    count, bins, ignored = pyplot.hist(
-        values, facecolor='g', density=withDistribution)
+    pyplot.yticks(numpy.arange(0, 22, step=5))
+    pyplot.xlabel(caption+ " (s)")
+    pyplot.ylabel('Number of Executions')
+    pyplot.grid(True,alpha=0.3)
+    mu, sigma = stats.norm.fit(values)
 
-    pyplot.xlabel(caption)
-    pyplot.ylabel('Executions')
-    # pyplot.grid(True)
-    legend = ['Number of Executions']
-    if withDistribution:
-        mu, sigma = stats.norm.fit(values)
-        x = numpy.linspace(mu - 3 * sigma, mu + 3 * sigma, 100)
-        pyplot.plot(x, stats.norm.pdf(x, mu, sigma))
-        q95 = stats.norm.ppf(0.95, loc=mu, scale=sigma)
-        q99 = stats.norm.ppf(0.99, loc=mu, scale=sigma)
-        print(caption)
-        print(" 95% " + str(q95))
-        print(" 99% " + str(q99))
-        pyplot.axvline(x=q99)
-        legend = ['Normal Distribution', 'Percentage of Executions']
-    pyplot.legend(legend)
+
+    count, bins, ignored = pyplot.hist(values,
+                                       facecolor='g', bins=12)
+    x = numpy.linspace(mu - 3 * sigma, mu + 3 * sigma, 100)
+    pyplot.plot(x, 42 * stats.norm.pdf((x - mu) / sigma))
+
+    q95 = stats.norm.ppf(0.95, loc=mu, scale=sigma)
+    print(" 95% " + str(q95))
+    q99 = stats.norm.ppf(0.99, loc=mu, scale=sigma)
+    print(" 99% " + str(q99))
+    #pyplot.axvline(x=q99)
+
+    #legend = ['Normal Distribution', 'Percentage of Executions']
+    #pyplot.legend(legend)
     # pyplot.show()
-    dist = ''
-    if withDistribution:
-        dist = 'withD'
-    fileName = path + caption + dist + ".pdf"
+    fileName = path + caption + ".pdf"
     f.savefig(fileName)
 
 
@@ -99,11 +94,9 @@ for root, dirs, files in os.walk(path):
             maxMemoryUtilization.append(jsonFile['maxMemoryUtilization'])
             network.append(jsonFile['networkUsage'])
 
-plotBoth(path, 'memoryUtilization', memoryUtilization)
-plotBoth(path, 'cpuUtilisation', cpuUtilisation)
-plotBoth(path, 'durationMS', durationMS)
-plotBoth(path, 'maxMemoryUtilization', maxMemoryUtilization)
-plotBoth(path, 'networkUsage', network)
+plotHist(path, 'memoryUtilization', memoryUtilization)
+plotHist(path, 'cpuUtilisation', cpuUtilisation)
+plotHist(path, 'duration', durationMS)
 
 # csvFile = readCSVFile('artifacts/metrics.csv')
 # plotFile(csvFile)

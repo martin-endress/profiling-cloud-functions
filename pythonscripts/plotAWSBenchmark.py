@@ -77,7 +77,7 @@ pyplot.grid(linestyle='-')
 pyplot.plot(keys, values, 'o', markerfacecolor='lightgray',
             markeredgecolor='grey')
 
-model = LinearRegression()
+model = LinearRegression(fit_intercept=False)
 shapedKeys = numpy.array(keys).reshape((-1, 1))
 model.fit(shapedKeys, values)
 
