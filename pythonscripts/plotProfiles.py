@@ -49,7 +49,9 @@ def getOptimal(time, delta):
 
 def plotHist(path, caption, values, unit):
     values = list(map(lambda x: x/1000, values))
+    values = list(filter(lambda x: x < 22, values))
     print(caption)
+    print(values)
     f = pyplot.figure()
     pyplot.yticks(numpy.arange(0, 22, step=5))
     pyplot.xlabel(caption + " (" + unit + ")")
