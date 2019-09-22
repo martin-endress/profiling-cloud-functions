@@ -25,10 +25,11 @@ public class Mixed implements RequestHandler<LoadInput, LoadResponse> {
 
     @Override
     public LoadResponse handleRequest(LoadInput input, Context context) {
+        long startTime = System.currentTimeMillis();
         cpuLoadFibonacci = Optional.of(new CPULoadFibonacci(input.load));
         simulateLoad();
-        simulateLoad();
         LoadResponse response = new LoadResponse();
+        response.setResponse(System.currentTimeMillis() - startTime);
         return response;
     }
 

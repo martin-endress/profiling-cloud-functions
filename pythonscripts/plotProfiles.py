@@ -2,6 +2,7 @@ import csv
 import json
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as pyplot
+import matplotlib
 import numpy
 import os
 import scipy.stats as stats
@@ -46,30 +47,30 @@ def getOptimal(time, delta):
     return list(map(lambda x: x * delta, time))
 
 
-def plotHist(path, caption, values):
+def plotHist(path, caption, values, unit):
     values = list(map(lambda x: x/1000, values))
     print(caption)
     f = pyplot.figure()
     pyplot.yticks(numpy.arange(0, 22, step=5))
-    pyplot.xlabel(caption+ " (s)")
+    pyplot.xlabel(caption + " (" + unit + ")")
+    #pyplot.xticks(numpy.arange(0, 22, step=0.1))
     pyplot.ylabel('Number of Executions')
-    pyplot.grid(True,alpha=0.3)
+    pyplot.grid(True, alpha=0.3)
     mu, sigma = stats.norm.fit(values)
 
-
     count, bins, ignored = pyplot.hist(values,
-                                       facecolor='g', bins=12)
+                                       facecolor='g', bins=10)
     x = numpy.linspace(mu - 3 * sigma, mu + 3 * sigma, 100)
-    pyplot.plot(x, 42 * stats.norm.pdf((x - mu) / sigma))
+    pyplot.plot(x, 45 * stats.norm.pdf((x - mu) / sigma))
 
     q95 = stats.norm.ppf(0.95, loc=mu, scale=sigma)
     print(" 95% " + str(q95))
     q99 = stats.norm.ppf(0.99, loc=mu, scale=sigma)
     print(" 99% " + str(q99))
-    #pyplot.axvline(x=q99)
+    # pyplot.axvline(x=q99)
 
     #legend = ['Normal Distribution', 'Percentage of Executions']
-    #pyplot.legend(legend)
+    # pyplot.legend(legend)
     # pyplot.show()
     fileName = path + caption + ".pdf"
     f.savefig(fileName)
@@ -77,6 +78,7 @@ def plotHist(path, caption, values):
 
 # TODO validate input and
 path = str(sys.argv[1])
+matplotlib.rcParams.update({'font.size': 14})
 
 memoryUtilization = []
 cpuUtilisation = []
@@ -94,9 +96,9 @@ for root, dirs, files in os.walk(path):
             maxMemoryUtilization.append(jsonFile['maxMemoryUtilization'])
             network.append(jsonFile['networkUsage'])
 
-plotHist(path, 'memoryUtilization', memoryUtilization)
-plotHist(path, 'cpuUtilisation', cpuUtilisation)
-plotHist(path, 'duration', durationMS)
+plotHist(path, 'memoryUtilization', maxMemoryUtilization, "MB")
+plotHist(path, 'cpuUtilisation', cpuUtilisation, "%")
+plotHist(path, 'duration', durationMS, "s")
 
 # csvFile = readCSVFile('artifacts/metrics.csv')
 # plotFile(csvFile)
