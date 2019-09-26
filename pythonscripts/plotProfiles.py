@@ -49,36 +49,34 @@ def getOptimal(time, delta):
 
 def plotHist(path, caption, values, unit):
     values = list(map(lambda x: x/1000, values))
-    values = list(filter(lambda x: x < 22, values))
     print(caption)
     print(values)
     f = pyplot.figure()
     pyplot.yticks(numpy.arange(0, 22, step=5))
     pyplot.xlabel(caption + " (" + unit + ")")
-    #pyplot.xticks(numpy.arange(0, 22, step=0.1))
+    # pyplot.xticks(numpy.arange(0, 22, step=0.1))
     pyplot.ylabel('Number of Executions')
     pyplot.grid(True, alpha=0.3)
     mu, sigma = stats.norm.fit(values)
 
     count, bins, ignored = pyplot.hist(values,
-                                       facecolor='g', bins=10)
+                                       facecolor='g', bins=10, density=False)
     x = numpy.linspace(mu - 3 * sigma, mu + 3 * sigma, 100)
-    pyplot.plot(x, 45 * stats.norm.pdf((x - mu) / sigma))
+    pyplot.plot(x, stats.norm.pdf((x - mu) / sigma)/sigma)
 
     q95 = stats.norm.ppf(0.95, loc=mu, scale=sigma)
     print(" 95% " + str(q95))
     q99 = stats.norm.ppf(0.99, loc=mu, scale=sigma)
     print(" 99% " + str(q99))
-    # pyplot.axvline(x=q99)
+    pyplot.axvline(x=q99)
 
-    #legend = ['Normal Distribution', 'Percentage of Executions']
+    # legend = ['Normal Distribution', 'Percentage of Executions']
     # pyplot.legend(legend)
     # pyplot.show()
     fileName = path + caption + ".pdf"
     f.savefig(fileName)
 
 
-# TODO validate input and
 path = str(sys.argv[1])
 matplotlib.rcParams.update({'font.size': 14})
 

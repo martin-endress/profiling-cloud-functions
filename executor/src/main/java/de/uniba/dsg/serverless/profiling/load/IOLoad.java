@@ -56,7 +56,6 @@ public class IOLoad implements Runnable {
 
     @Override
     public void run() {
-        // TODO replace this with a more general approach, define load pattern first and then execute it.
         List<Integer> loadLog = new ArrayList<>();
         long startTime = System.currentTimeMillis();
         long endTime = startTime + time;
@@ -77,7 +76,6 @@ public class IOLoad implements Runnable {
             nextInvocation += interval;
             long toNextInvocation = nextInvocation - System.currentTimeMillis();
             if (toNextInvocation < 0) {
-                // TODO: do something
                 System.out.println("DELTA NEXT INVOCATION" + toNextInvocation);
             }
             loadLog.add(load);
@@ -101,7 +99,6 @@ public class IOLoad implements Runnable {
     private Path writeLoadToFile(List<Integer> invocations, String fileName) {
         Path path = Paths.get("logs", fileName + ".csv");
 
-        // TODO make this modular
         try {
             Files.createDirectories(path.getParent());
             List<String> lines1 = IntStream.range(0, invocations.size())

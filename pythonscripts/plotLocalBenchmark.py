@@ -1,5 +1,6 @@
 import csv
 import matplotlib.pyplot as pyplot
+import matplotlib
 import numpy
 import os
 import sys
@@ -52,12 +53,13 @@ def getOptimal(time, delta):
 
 path = str(sys.argv[1])
 maxQuota = int(sys.argv[2])
+matplotlib.rcParams.update({'font.size': 14})
 
 result = readCSVFile(path)[0]
 limits = list(result.keys())
 averages = list(result.values())
 
-model = LinearRegression(fit_intercept=False)
+model = LinearRegression()
 shapedLimits = numpy.array(limits).reshape((-1, 1))
 model.fit(shapedLimits, averages)
 r_sq = model.score(shapedLimits, averages)
@@ -85,6 +87,11 @@ pyplot.plot(limits, averages, 'o', markerfacecolor='lightgray',
 x = numpy.linspace(0, 5, 3)
 pyplot.plot(x, x * model.coef_ + model.intercept_,
             linestyle='--', color='orange')
+
+model = LinearRegression(fit_intercept=False)
+model.fit(shapedLimits, averages)
+pyplot.plot(x, x * model.coef_ + model.intercept_,
+            linestyle='--', color='salmon')
 
 f.tight_layout()
 

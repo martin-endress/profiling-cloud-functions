@@ -16,11 +16,11 @@ public class ProviderPerformanceModel {
     private SimpleRegression regression;
 
     private ProviderPerformanceModel() {
-        regression = new SimpleRegression(false);
+        regression = new SimpleRegression();
     }
 
     public ProviderPerformanceModel(Path providerCalibration) throws ProfilingException {
-        regression = new SimpleRegression(false);
+        regression = new SimpleRegression();
         addProviderCalibration(providerCalibration);
     }
 

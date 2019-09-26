@@ -1,5 +1,6 @@
 import csv
 import matplotlib.pyplot as pyplot
+import matplotlib
 import numpy
 import os
 import sys
@@ -64,30 +65,38 @@ def plotFile(file, folder):
 
     fig, ax1 = pyplot.subplots()
 
+    nanoSecond = 1E9
+    time_s = 30
+    memSize = 1024 * 1024
+
+    time = list(map(lambda x: x/1000, time))
+    statsCpuUsage = list(map(lambda x: 100 * x / nanoSecond, statsCpuUsage))
+    memoryUsage = list(map(lambda x: x/memSize, memoryUsage))
+    bytesRecieved = list(map(lambda x: x / 1024, bytesRecieved))
+
+    ax1.set_xlim([0, max(time)])
     color = 'tab:blue'
-    ax1.set_ylabel('statsCpuUsage', color=color)
-    ax1.set_xlabel('time (ms)')
-    ax1.set_ylim([0, 12E8])
+    ax1.set_ylabel('statsCpuUsage (%)', color=color)
+    ax1.set_xlabel('time (s)')
+    ax1.set_ylim([0, 120])
     ax1.plot(time, statsCpuUsage, color=color)
     ax1.tick_params(axis='y', labelcolor=color)
 
-    time_ms = 30000
-    memSize = 1024 * 1024 * 1024
+    x = numpy.linspace(0, time_s, 2)
+    
+    # ax1.plot(x, 100 * x / time_s, ':',
+    #        dashes=(1.1, 2.5), color='tab:blue', linewidth=1)
+    # ax1.plot(x, 100 * x / time_s, ':',
+    #        dashes=(1, 2), color='tab:red', linewidth=1)
+
     ax2 = ax1.twinx()
     color = 'tab:red'
-    ax2.set_ylabel('memoryUsage', color=color)
-    ax2.set_ylim([0, 1.2 * memSize])
+    ax2.set_ylabel('memoryUsage (MB)', color=color)
+    ax2.set_ylim([0, 1.2 * 256])
     ax2.plot(time, memoryUsage, color=color)
     ax2.tick_params(axis='y', labelcolor=color)
 
-    x = numpy.linspace(0, time_ms, 2)
-    ax2.plot(x, x * (memSize / time_ms), linestyle=":", color='tab:blue', linewidth=1)
-    #ax2.plot(x, x * (memSize / time_ms), ':',
-    #         dashes=(1.1, 2.5), color='tab:blue', linewidth=1)
-    #ax2.plot(x, x * (memSize / time_ms), ':',
-    #         dashes=(1, 2), color='tab:red', linewidth=1)
-
-    #netSize = 5* 1024 * 1024
+    #netSize = 1024
     #ax3 = ax1.twinx()
     #ax3.spines["right"].set_position(("axes", 1.2))
     #color = 'tab:orange'
@@ -98,10 +107,11 @@ def plotFile(file, folder):
 
     fig.tight_layout()
     fig.savefig(folder+'/output.pdf')
-    # pyplot.show()
+    pyplot.show()
 
 
 path = str(sys.argv[1])
+matplotlib.rcParams.update({'font.size': 16})
 
 for root, dirs, files in os.walk(path):
     for file in files:

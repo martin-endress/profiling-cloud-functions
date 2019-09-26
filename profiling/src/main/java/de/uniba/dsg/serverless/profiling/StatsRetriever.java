@@ -79,6 +79,13 @@ public class StatsRetriever {
         return getProfileUsingDockerApi(executor);
     }
 
+    /**
+     * currently deprecated. See 2.2 of thesis
+     * @param profiling
+     * @param containerId
+     * @return
+     * @throws ProfilingException
+     */
     private Profile getProfileUsingBoth(ContainerProfiling profiling, String containerId) throws ProfilingException {
         List<Metrics> metrics = new ArrayList<>();
         ControlGroupProfiling controlGroupProfiling = new ControlGroupProfiling(containerId, containerStartTime);

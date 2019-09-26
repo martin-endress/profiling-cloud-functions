@@ -13,7 +13,7 @@ public class ProfileMetaInfo {
     public final InspectContainerResponse.ContainerState state;
     public final long durationMS;
     public double cpuUtilisation; // relative to the quota
-    public double maxCpuUtilisation; // maximum cpu utilization // TODO maybe change this to relative to quota (and calibration)
+    public double maxCpuUtilisation; // maximum cpu utilization
     public long maxMemoryUtilization;
     public double memoryLimit;
     public double averageMemoryUtilization;

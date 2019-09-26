@@ -8,7 +8,7 @@ import java.util.Optional;
 public class Main {
 
     public static void main(String[] args) {
-        runExperiment("AWSPrimaryExperiment7.json");
+        runExperiment("AWSPrimaryExperiment.json");
     }
 
     public static void runExperiment(String ex) {

@@ -10,9 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 public class ResponseGenerator {
 
-    // TODO Use pattern
-    // Pattern SIZE_PATTERN = Pattern.compile("[0-9]+(b|mb|gb)");
-
     private final String response;
     private final int delay;
     private final int size;

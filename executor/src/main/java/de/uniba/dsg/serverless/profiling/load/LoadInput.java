@@ -1,6 +1,5 @@
 package de.uniba.dsg.serverless.profiling.load;
 
-// TODO extend to include every load
 
 public class LoadInput {
     public int load;

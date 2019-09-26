@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class LocalPerformanceModel {
 
-    private SimpleRegression regression = new SimpleRegression(false);
+    private SimpleRegression regression = new SimpleRegression();
 
     private LocalPerformanceModel() {
     }
